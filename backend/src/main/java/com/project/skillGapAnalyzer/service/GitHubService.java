@@ -2,6 +2,7 @@ package com.project.skillGapAnalyzer.service;
 
 import com.project.skillGapAnalyzer.dto.response.GitHubSearchResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.RepoDTO;
+import com.project.skillGapAnalyzer.dto.response.RepoResponseDTO;
 import com.project.skillGapAnalyzer.exceptions.ExternalServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +71,7 @@ public class GitHubService {
         };
     }
 
-    public Map<String, List<RepoDTO>> getReposForSkills(List<String> skills, String experienceLevel){
+    public RepoResponseDTO getReposForSkills(List<String> skills, String experienceLevel){
 
         logger.info("Fetching repositories for {} skills at {} level", skills.size(), experienceLevel);
 
@@ -86,6 +87,6 @@ public class GitHubService {
 
         logger.info("Repository fetch completed");
 
-        return result;
+        return new RepoResponseDTO(result);
     }
 }

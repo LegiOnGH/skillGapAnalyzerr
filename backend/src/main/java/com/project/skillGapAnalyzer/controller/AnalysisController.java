@@ -1,7 +1,7 @@
 package com.project.skillGapAnalyzer.controller;
 
 import com.project.skillGapAnalyzer.dto.request.SaveAnalysisRequestDTO;
-import com.project.skillGapAnalyzer.dto.response.SaveAnalysisResponseDTO;
+import com.project.skillGapAnalyzer.dto.response.MessageResponseDTO;
 import com.project.skillGapAnalyzer.service.AnalysisService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -21,14 +21,14 @@ public class AnalysisController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<SaveAnalysisResponseDTO> saveAnalysis(
+    public ResponseEntity<MessageResponseDTO> saveAnalysis(
             @Valid @RequestBody SaveAnalysisRequestDTO request) {
 
         logger.info("Saving analysis for user: {}", request.getUserId());
         analysisService.saveAnalysis(request);
 
         return ResponseEntity.ok(
-                new SaveAnalysisResponseDTO("Analysis saved successfully")
+                new MessageResponseDTO("Analysis saved successfully")
         );
     }
 }

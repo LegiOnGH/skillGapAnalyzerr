@@ -18,7 +18,6 @@ public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // 🔴 Bad Request
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponseDTO> handleBadRequest(BadRequestException ex) {
 
@@ -32,7 +31,6 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    // 🔴 Resource Not Found
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleNotFound(ResourceNotFoundException ex) {
 
@@ -46,7 +44,6 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    // 🔴 Authentication Failure
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponseDTO> handleBadCredentials(BadCredentialsException ex) {
 
@@ -60,7 +57,6 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    // 🔴 Validation Errors (VERY IMPORTANT)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
 
@@ -80,7 +76,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    // 🔴 Catch-All (Last Line of Defense)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGeneric(Exception ex) {
 

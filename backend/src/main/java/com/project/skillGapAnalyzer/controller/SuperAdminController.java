@@ -1,5 +1,6 @@
 package com.project.skillGapAnalyzer.controller;
 
+import com.project.skillGapAnalyzer.dto.response.MessageResponseDTO;
 import com.project.skillGapAnalyzer.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,21 +23,23 @@ public class SuperAdminController {
 
     // 🔹 Promote User to Admin
     @PutMapping("/promote/{userId}")
-    public ResponseEntity<String> promoteUser(@PathVariable String userId) {
+    public ResponseEntity<MessageResponseDTO> promoteUser(@PathVariable String userId) {
 
         logger.info("Promoting user to ADMIN: {}", userId);
         userService.promoteUser(userId);
 
-        return ResponseEntity.ok("User promoted to ADMIN");
+        return ResponseEntity.ok(
+                new MessageResponseDTO("User promoted to ADMIN"));
     }
 
     // 🔹 Delete User
     @DeleteMapping("/user/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable String userId) {
+    public ResponseEntity<MessageResponseDTO> deleteUser(@PathVariable String userId) {
 
         logger.info("Deleting user: {}", userId);
         userService.deleteUser(userId);
 
-        return ResponseEntity.ok("User deleted successfully");
+        return ResponseEntity.ok(
+                new MessageResponseDTO("User deleted successfully"));
     }
 }

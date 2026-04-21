@@ -2,16 +2,18 @@ package com.project.skillGapAnalyzer.service;
 
 import com.project.skillGapAnalyzer.dto.request.SkillResourceRequestDTO;
 import com.project.skillGapAnalyzer.dto.request.SkillResourceUpdateDTO;
+import com.project.skillGapAnalyzer.dto.response.SkillResourceResponseDTO;
 import com.project.skillGapAnalyzer.exceptions.BadRequestException;
 import com.project.skillGapAnalyzer.exceptions.ResourceNotFoundException;
+import com.project.skillGapAnalyzer.mapper.SkillResourceMapper;
 import com.project.skillGapAnalyzer.model.SkillResource;
 import com.project.skillGapAnalyzer.repository.SkillResourceRepository;
+import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class SkillResourceService {
@@ -19,14 +21,16 @@ public class SkillResourceService {
     private static final Logger logger = LoggerFactory.getLogger(SkillResourceService.class);
 
     private final SkillResourceRepository repository;
+    private final SkillResourceMapper skillResourceMapper;
 
-    public SkillResourceService(SkillResourceRepository repository) {
+    public SkillResourceService(SkillResourceRepository repository, SkillResourceMapper skillResourceMapper) {
         this.repository = repository;
+        this.skillResourceMapper = skillResourceMapper;
     }
 
-    public SkillResource addResource(SkillResourceRequestDTO dto) {
+    public SkillResourceResponseDTO addResource(SkillResourceRequestDTO dto) {
 
-        String skill = dto.getSkill().trim().toLowerCase();
+        String skill = StringNormalizer.normalize(dto.getSkill());
 
         logger.info("Adding resource for skill: {}", skill);
 
@@ -34,12 +38,7 @@ public class SkillResourceService {
             throw new BadRequestException("Resource already exists for skill: " + skill);
         }
 
-        List<String> cleanedResources = dto.getResources()
-                .stream()
-                .map(String::trim)
-                .filter(r -> !r.isEmpty())
-                .distinct()
-                .collect(Collectors.toList());
+        List<String> cleanedResources = StringNormalizer.normalizeListPreserveCase(dto.getResources());
 
         if (cleanedResources.isEmpty()) {
             throw new BadRequestException("Resources cannot be empty");
@@ -54,10 +53,10 @@ public class SkillResourceService {
 
         logger.info("Resource created for skill: {}", skill);
 
-        return saved;
+        return skillResourceMapper.toDTO(saved);
     }
 
-    public SkillResource updateResource(String id, SkillResourceUpdateDTO dto) {
+    public SkillResourceResponseDTO updateResource(String id, SkillResourceUpdateDTO dto) {
 
         logger.info("Updating resource: {}", id);
 
@@ -66,12 +65,7 @@ public class SkillResourceService {
 
         if (dto.getResources() != null && !dto.getResources().isEmpty()) {
 
-            List<String> cleanedResources = dto.getResources()
-                    .stream()
-                    .map(String::trim)
-                    .filter(r -> !r.isEmpty())
-                    .distinct()
-                    .collect(Collectors.toList());
+            List<String> cleanedResources = StringNormalizer.normalizeListPreserveCase(dto.getResources());
 
             if (cleanedResources.isEmpty()) {
                 throw new BadRequestException("Resources cannot be empty");
@@ -84,7 +78,7 @@ public class SkillResourceService {
 
         logger.info("Resource updated successfully: {}", id);
 
-        return updated;
+        return skillResourceMapper.toDTO(updated);
     }
 
     public void deleteResource(String id) {

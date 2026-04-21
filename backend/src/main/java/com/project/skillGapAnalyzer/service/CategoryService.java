@@ -1,10 +1,13 @@
 package com.project.skillGapAnalyzer.service;
 
 import com.project.skillGapAnalyzer.dto.request.CategoryRequestDTO;
+import com.project.skillGapAnalyzer.dto.response.CategoryResponseDTO;
 import com.project.skillGapAnalyzer.exceptions.BadRequestException;
 import com.project.skillGapAnalyzer.exceptions.ResourceNotFoundException;
+import com.project.skillGapAnalyzer.mapper.CategoryMapper;
 import com.project.skillGapAnalyzer.model.Category;
 import com.project.skillGapAnalyzer.repository.CategoryRepository;
+import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,14 +20,16 @@ public class CategoryService {
     private static final Logger logger = LoggerFactory.getLogger(CategoryService.class);
 
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
         this.categoryRepository = categoryRepository;
+        this.categoryMapper = categoryMapper;
     }
 
-    public Category createCategory(CategoryRequestDTO dto){
+    public CategoryResponseDTO createCategory(CategoryRequestDTO dto){
 
-        String name = dto.getName().trim().toLowerCase();
+        String name = StringNormalizer.normalize(dto.getName());
 
         logger.info("Creating category: {}", name);
 
@@ -40,10 +45,10 @@ public class CategoryService {
 
         logger.info("Category created successfully: {}", saved.getId());
 
-        return saved;
+        return categoryMapper.toDTO(saved);
     }
 
-    public Category updateCategory(String id, CategoryRequestDTO dto){
+    public CategoryResponseDTO updateCategory(String id, CategoryRequestDTO dto){
 
         logger.info("Updating category: {}", id);
 
@@ -52,9 +57,9 @@ public class CategoryService {
                         new ResourceNotFoundException("Category not found with id: " + id)
                 );
 
-        if (dto.getName() != null && !dto.getName().trim().isEmpty()) {
+        String newName = StringNormalizer.normalize(dto.getName());
 
-            String newName = dto.getName().trim().toLowerCase();
+        if (newName != null && !newName.isEmpty()) {
 
             if (categoryRepository.existsByNameIgnoreCase(newName)
                     && !existing.getName().equalsIgnoreCase(newName)) {
@@ -68,7 +73,7 @@ public class CategoryService {
 
         logger.info("Category updated successfully: {}", id);
 
-        return updated;
+        return categoryMapper.toDTO(updated);
     }
 
     public void deleteCategory(String id){
@@ -84,7 +89,7 @@ public class CategoryService {
         logger.info("Category deleted successfully: {}", id);
     }
 
-    public List<Category> getAllCategories(){
+    public List<CategoryResponseDTO> getAllCategories(){
 
         logger.info("Fetching all categories");
 
@@ -96,6 +101,8 @@ public class CategoryService {
             logger.info("Fetched {} categories", categories.size());
         }
 
-        return categories;
+        return categories.stream()
+                .map(categoryMapper::toDTO)
+                .toList();
     }
 }

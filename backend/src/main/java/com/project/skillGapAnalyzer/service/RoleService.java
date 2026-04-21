@@ -2,17 +2,19 @@ package com.project.skillGapAnalyzer.service;
 
 import com.project.skillGapAnalyzer.dto.request.RoleRequestDTO;
 import com.project.skillGapAnalyzer.dto.request.RoleUpdateDTO;
+import com.project.skillGapAnalyzer.dto.response.RoleResponseDTO;
 import com.project.skillGapAnalyzer.exceptions.BadRequestException;
 import com.project.skillGapAnalyzer.exceptions.ResourceNotFoundException;
+import com.project.skillGapAnalyzer.mapper.RoleMapper;
 import com.project.skillGapAnalyzer.model.Role;
 import com.project.skillGapAnalyzer.repository.CategoryRepository;
 import com.project.skillGapAnalyzer.repository.RoleRepository;
+import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class RoleService {
@@ -21,18 +23,20 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
     private final CategoryRepository categoryRepository;
+    private final RoleMapper roleMapper;
 
-    public RoleService(RoleRepository roleRepository, CategoryRepository categoryRepository) {
+    public RoleService(RoleRepository roleRepository, CategoryRepository categoryRepository, RoleMapper roleMapper) {
         this.roleRepository = roleRepository;
         this.categoryRepository = categoryRepository;
+        this.roleMapper = roleMapper;
     }
 
-    public Role createRole(RoleRequestDTO dto) {
+    public RoleResponseDTO createRole(RoleRequestDTO dto) {
 
         logger.info("Creating role: {}", dto.getRoleName());
 
-        String roleName = dto.getRoleName().trim();
-        String category = dto.getCategory().trim().toLowerCase();
+        String roleName = StringNormalizer.normalizePreserveCase(dto.getRoleName());
+        String category = StringNormalizer.normalize(dto.getCategory());
 
         if (roleRepository.findByRoleNameIgnoreCase(roleName).isPresent()) {
             throw new BadRequestException("Role already exists: " + roleName);
@@ -42,12 +46,7 @@ public class RoleService {
             throw new BadRequestException("Invalid category: " + category);
         }
 
-        List<String> normalizedSkills = dto.getSkills()
-                .stream()
-                .map(skill -> skill.trim().toLowerCase())
-                .filter(s -> !s.isEmpty())
-                .distinct()
-                .collect(Collectors.toList());
+        List<String> normalizedSkills = StringNormalizer.normalizeList(dto.getSkills());
 
         if (normalizedSkills.isEmpty()) {
             throw new BadRequestException("Role must have at least one valid skill");
@@ -63,52 +62,39 @@ public class RoleService {
 
         logger.info("Role created successfully: {}", saved.getId());
 
-        return saved;
+        return roleMapper.toDTO(saved);
     }
 
-    public Role updateRole(String id, RoleUpdateDTO dto) {
+    public RoleResponseDTO updateRole(String id, RoleUpdateDTO dto) {
 
         logger.info("Updating role: {}", id);
 
         Role existing = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
 
-        if (dto.getRoleName() != null && !dto.getRoleName().trim().isEmpty()) {
-            String newName = dto.getRoleName().trim();
-
+        String newName = StringNormalizer.normalizePreserveCase(dto.getRoleName());
+        if (newName != null && !newName.isEmpty()) {
             roleRepository.findByRoleNameIgnoreCase(newName)
+                    .filter(role -> !role.getId().equals(id))
                     .ifPresent(role -> {
-                        if (!role.getId().equals(id)) {
-                            throw new BadRequestException("Role already exists: " + newName);
-                        }
+                        throw new BadRequestException("Role already exists: " + newName);
                     });
-
             existing.setRoleName(newName);
         }
 
-        if (dto.getCategory() != null && !dto.getCategory().trim().isEmpty()) {
-            String category = dto.getCategory().trim().toLowerCase();
-
+        String category = StringNormalizer.normalize(dto.getCategory());
+        if(category != null && !category.isEmpty()){
             if (!categoryRepository.existsByNameIgnoreCase(category)) {
                 throw new BadRequestException("Invalid category: " + category);
             }
-
             existing.setCategory(category);
         }
 
-        if (dto.getSkills() != null && !dto.getSkills().isEmpty()) {
-
-            List<String> normalizedSkills = dto.getSkills()
-                    .stream()
-                    .map(skill -> skill.trim().toLowerCase())
-                    .filter(s -> !s.isEmpty())
-                    .distinct()
-                    .collect(Collectors.toList());
-
+        if (dto.getSkills() != null) {
+            List<String> normalizedSkills = StringNormalizer.normalizeList(dto.getSkills());
             if (normalizedSkills.isEmpty()) {
                 throw new BadRequestException("Skills cannot be empty");
             }
-
             existing.setSkills(normalizedSkills);
         }
 
@@ -116,7 +102,7 @@ public class RoleService {
 
         logger.info("Role updated successfully: {}", id);
 
-        return updated;
+        return roleMapper.toDTO(updated);
     }
 
     public void deleteRole(String id) {
@@ -132,7 +118,7 @@ public class RoleService {
         logger.info("Role deleted successfully: {}", id);
     }
 
-    public List<Role> getRoles(String category){
+    public List<RoleResponseDTO> getRoles(String category){
 
         logger.info("Fetching roles for category: {}", category);
 
@@ -144,17 +130,21 @@ public class RoleService {
             logger.info("Fetched {} roles for category: {}", roles.size(), category);
         }
 
-        return roles;
+        return roles.stream()
+                .map(roleMapper::toDTO)
+                .toList();
     }
 
-    public Role getRoleByName(String roleName){
+    public RoleResponseDTO getRoleByName(String roleName){
 
         logger.info("Fetching role by name: {}", roleName);
 
-        return roleRepository.findByRoleNameIgnoreCase(roleName)
+        Role role = roleRepository.findByRoleNameIgnoreCase(roleName)
                 .orElseThrow(() -> {
                     logger.warn("Role not found: {}", roleName);
                     return new ResourceNotFoundException("Role not found: " + roleName);
                 });
+
+        return roleMapper.toDTO(role);
     }
 }

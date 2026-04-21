@@ -1,15 +1,15 @@
 package com.project.skillGapAnalyzer.service;
 
+import com.project.skillGapAnalyzer.dto.response.RoleResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.SkillAnalysisResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.RepoDTO;
-import com.project.skillGapAnalyzer.model.Role;
 import com.project.skillGapAnalyzer.repository.SkillResourceRepository;
+import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class SkillService {
@@ -36,11 +36,15 @@ public class SkillService {
 
         logger.info("Starting skill analysis for role: {}", targetRole);
 
-        Role role = roleService.getRoleByName(targetRole);
+        RoleResponseDTO role = roleService.getRoleByName(targetRole);
 
-        List<String> targetSkills = role.getSkills();
+        List<String> targetSkills = role.getSkills().stream()
+                .map(StringNormalizer::normalize)
+                .toList();
 
-        Set<String> userSkillSet = normalizeSkills(userSkills);
+        Set<String> userSkillSet = userSkills == null
+                ? Collections.emptySet()
+                : StringNormalizer.normalizeSet(userSkills);
 
         List<String> matched = getMatchedSkills(targetSkills, userSkillSet);
         List<String> missing = getMissingSkills(targetSkills, userSkillSet);
@@ -50,10 +54,11 @@ public class SkillService {
         Map<String, List<String>> resources = getResourcesForMissingSkills(missing);
 
         Map<String, List<RepoDTO>> repos = includeRepos
-                ? gitHubService.getReposForSkills(missing, experienceLevel)
+                ? gitHubService.getReposForSkills(missing, experienceLevel).getRepos()
                 : Collections.emptyMap();
 
-        logger.info("Skill analysis completed for role: {}", targetRole);
+        logger.info("Analysis done: matched={}, missing={}, progress={}%",
+                matched.size(), missing.size(), progress);
 
         return new SkillAnalysisResponseDTO(
                 matched,
@@ -64,21 +69,15 @@ public class SkillService {
         );
     }
 
-    private Set<String> normalizeSkills(List<String> skills) {
-        return skills.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
-    }
-
     private List<String> getMatchedSkills(List<String> targetSkills, Set<String> userSkills) {
         return targetSkills.stream()
-                .filter(skill -> userSkills.contains(skill.toLowerCase()))
+                .filter(userSkills::contains)
                 .toList();
     }
 
     private List<String> getMissingSkills(List<String> targetSkills, Set<String> userSkills) {
         return targetSkills.stream()
-                .filter(skill -> !userSkills.contains(skill.toLowerCase()))
+                .filter(skill -> !userSkills.contains(skill))
                 .toList();
     }
 

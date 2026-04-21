@@ -1,9 +1,10 @@
 package com.project.skillGapAnalyzer.controller;
 
 import com.project.skillGapAnalyzer.dto.request.*;
-import com.project.skillGapAnalyzer.model.Category;
-import com.project.skillGapAnalyzer.model.Role;
-import com.project.skillGapAnalyzer.model.SkillResource;
+import com.project.skillGapAnalyzer.dto.response.CategoryResponseDTO;
+import com.project.skillGapAnalyzer.dto.response.MessageResponseDTO;
+import com.project.skillGapAnalyzer.dto.response.RoleResponseDTO;
+import com.project.skillGapAnalyzer.dto.response.SkillResourceResponseDTO;
 import com.project.skillGapAnalyzer.service.CategoryService;
 import com.project.skillGapAnalyzer.service.RoleService;
 import com.project.skillGapAnalyzer.service.SkillResourceService;
@@ -35,51 +36,52 @@ public class AdminController {
 
     // 🔹 Create Category
     @PostMapping("/category")
-    public ResponseEntity<Category> createCategory(@Valid @RequestBody CategoryRequestDTO category) {
+    public ResponseEntity<CategoryResponseDTO> createCategory(@Valid @RequestBody CategoryRequestDTO category) {
         logger.info("Admin creating category: {}", category.getName());
         return ResponseEntity.ok(categoryService.createCategory(category));
     }
 
     //create role
     @PostMapping("/role")
-    public ResponseEntity<Role> createRole(@Valid @RequestBody RoleRequestDTO role) {
+    public ResponseEntity<RoleResponseDTO> createRole(@Valid @RequestBody RoleRequestDTO role) {
 
         logger.info("Creating role: {}", role.getRoleName());
-        Role created = roleService.createRole(role);
+        RoleResponseDTO created = roleService.createRole(role);
         return ResponseEntity.ok(created);
     }
 
     //update role
     @PatchMapping("/role/{id}")
-    public ResponseEntity<Role> updateRole(
+    public ResponseEntity<RoleResponseDTO> updateRole(
             @PathVariable String id,
             @Valid @RequestBody RoleUpdateDTO dto) {
 
         logger.info("Updating role: {}", id);
-        Role role = roleService.updateRole(id, dto);
+        RoleResponseDTO role = roleService.updateRole(id, dto);
         return ResponseEntity.ok(role);
     }
 
     //delete role
     @DeleteMapping("/role/{id}")
-    public ResponseEntity<String> deleteRole(@PathVariable String id) {
+    public ResponseEntity<MessageResponseDTO> deleteRole(@PathVariable String id) {
 
         logger.info("Deleting role: {}", id);
 
         roleService.deleteRole(id);
 
-        return ResponseEntity.ok("Role deleted successfully");
+        return ResponseEntity.ok(
+                new MessageResponseDTO("Role deleted successfully"));
     }
 
     // 🔹 Add Skill Resource
     @PostMapping("/resource")
-    public ResponseEntity<SkillResource> addResource(@Valid @RequestBody SkillResourceRequestDTO resource) {
+    public ResponseEntity<SkillResourceResponseDTO> addResource(@Valid @RequestBody SkillResourceRequestDTO resource) {
         logger.info("Admin adding resource for skill: {}", resource.getSkill());
         return ResponseEntity.ok(skillResourceService.addResource(resource));
     }
 
     @PatchMapping("/resource/{id}")
-    public ResponseEntity<SkillResource> updateResource(
+    public ResponseEntity<SkillResourceResponseDTO> updateResource(
             @PathVariable String id,
             @RequestBody SkillResourceUpdateDTO resource) {
 
@@ -87,10 +89,11 @@ public class AdminController {
     }
 
     @DeleteMapping("/resource/{id}")
-    public ResponseEntity<String> deleteResource(@PathVariable String id) {
+    public ResponseEntity<MessageResponseDTO> deleteResource(@PathVariable String id) {
 
         skillResourceService.deleteResource(id);
 
-        return ResponseEntity.ok("Resource deleted");
+        return ResponseEntity.ok(
+                 new MessageResponseDTO("Resource deleted"));
     }
 }

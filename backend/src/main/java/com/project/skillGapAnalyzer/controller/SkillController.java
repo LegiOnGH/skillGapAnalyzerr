@@ -1,9 +1,9 @@
 package com.project.skillGapAnalyzer.controller;
 
 import com.project.skillGapAnalyzer.dto.request.SkillGapRequestDTO;
+import com.project.skillGapAnalyzer.dto.response.CategoryResponseDTO;
+import com.project.skillGapAnalyzer.dto.response.RoleResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.SkillAnalysisResponseDTO;
-import com.project.skillGapAnalyzer.model.Category;
-import com.project.skillGapAnalyzer.model.Role;
 import com.project.skillGapAnalyzer.service.CategoryService;
 import com.project.skillGapAnalyzer.service.RoleService;
 import com.project.skillGapAnalyzer.service.SkillService;
@@ -32,10 +32,10 @@ public class SkillController {
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<List<Category>> getAllCategories(){
+    public ResponseEntity<List<CategoryResponseDTO>> getAllCategories(){
         logger.info("Fetching all categories");
 
-        List<Category> categories = categoryService.getAllCategories();
+        List<CategoryResponseDTO> categories = categoryService.getAllCategories();
 
         logger.info("Fetched {} categories", categories.size());
 
@@ -43,10 +43,10 @@ public class SkillController {
     }
 
     @GetMapping("/roles")
-    public ResponseEntity<List<Role>> getRoles(@RequestParam String category){
+    public ResponseEntity<List<RoleResponseDTO>> getRoles(@RequestParam String category){
         logger.info("Fetching roles for category: {}", category);
 
-        List<Role> roles = roleService.getRoles(category);
+        List<RoleResponseDTO> roles = roleService.getRoles(category);
 
         logger.info("Fetched {} roles for category: {}", roles.size(), category);
 
@@ -54,10 +54,10 @@ public class SkillController {
     }
 
     @GetMapping("/role/{roleName}")
-    public ResponseEntity<Role> getRoleByName(@PathVariable String roleName){
+    public ResponseEntity<RoleResponseDTO> getRoleByName(@PathVariable String roleName){
         logger.info("Fetching role by name: {}", roleName);
 
-        Role role = roleService.getRoleByName(roleName);
+        RoleResponseDTO role = roleService.getRoleByName(roleName);
 
         logger.info("Role found: {}", roleName);
 
@@ -71,9 +71,7 @@ public class SkillController {
         logger.info("Skill analysis started for role: {}",
                 request.getTargetRole());
 
-        String experienceLevel = request.getExperienceLevel() != null ?
-                request.getExperienceLevel().name().toLowerCase()
-                : "beginner";
+        String experienceLevel = request.getExperienceLevel().name().toLowerCase();
 
         SkillAnalysisResponseDTO result =
                 skillService.analyzeSkills(request.getUserSkills(),

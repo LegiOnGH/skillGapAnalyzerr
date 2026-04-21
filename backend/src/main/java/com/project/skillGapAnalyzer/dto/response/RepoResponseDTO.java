@@ -5,10 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class RepoResponseDTO {
-    private List<RepoDTO> repos;
+    private Map<String, List<RepoDTO>> repos;
 }
