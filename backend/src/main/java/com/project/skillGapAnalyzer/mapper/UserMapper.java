@@ -12,9 +12,8 @@ public class UserMapper {
         if (dto == null) return null;
 
         return User.builder()
-                .userName(dto.getUserName())
-                .email(dto.getEmail())
-                .password(dto.getPassword()) // raw password, encode in service
+                .userName(dto.getUserName().trim())
+                .email(dto.getEmail().trim().toLowerCase())
                 .build();
     }
 
@@ -32,7 +31,12 @@ public class UserMapper {
     public void updateUserFromDTO(SignupRequestDTO dto, User user) {
         if (dto == null || user == null) return;
 
-        user.setUserName(dto.getUserName());
-        user.setEmail(dto.getEmail());
+        if (dto.getUserName() != null) {
+            user.setUserName(dto.getUserName().trim());
+        }
+
+        if (dto.getEmail() != null) {
+            user.setEmail(dto.getEmail().trim().toLowerCase());
+        }
     }
 }

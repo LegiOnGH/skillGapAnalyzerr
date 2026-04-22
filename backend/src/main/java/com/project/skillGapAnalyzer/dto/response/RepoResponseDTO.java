@@ -11,5 +11,5 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RepoResponseDTO {
-    private Map<String, List<RepoDTO>> repos;
+    private Map<String, List<RepoDTO>> reposBySkill;
 }

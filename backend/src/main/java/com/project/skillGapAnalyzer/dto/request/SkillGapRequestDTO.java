@@ -3,6 +3,7 @@ package com.project.skillGapAnalyzer.dto.request;
 import com.project.skillGapAnalyzer.enums.Experience;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.List;
@@ -11,9 +12,11 @@ import java.util.List;
 public class SkillGapRequestDTO {
 
     @NotEmpty(message = "Skills cannot be empty")
+    @Size(max = 15, message = "You can select up to 15 skills")
     private List<@NotBlank(message = "Skill cannot be blank") String> userSkills;
 
     @NotBlank(message = "Target role is required")
+    @Size(max = 50, message = "Target role too long")
     private String targetRole;
 
     private Experience experienceLevel = Experience.BEGINNER;

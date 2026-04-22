@@ -3,6 +3,7 @@ package com.project.skillGapAnalyzer.service;
 import com.project.skillGapAnalyzer.dto.response.GitHubSearchResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.RepoDTO;
 import com.project.skillGapAnalyzer.dto.response.RepoResponseDTO;
+import com.project.skillGapAnalyzer.enums.Experience;
 import com.project.skillGapAnalyzer.exceptions.ExternalServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +96,7 @@ public class GitHubService {
         };
     }
 
-    public RepoResponseDTO getReposForSkills(List<String> skills, String experienceLevel){
+    public RepoResponseDTO getReposForSkills(List<String> skills, Experience experienceLevel){
 
         logger.info("Fetching repositories for {} skills at {} level", skills.size(), experienceLevel);
 
@@ -104,7 +105,7 @@ public class GitHubService {
         skills.stream()
                 .limit(3)
                 .forEach(skill -> {
-                    String query = buildQuery(skill, experienceLevel);
+                    String query = buildQuery(skill, experienceLevel.name().toLowerCase());
                     List<RepoDTO> repos = fetchRepositories(query);
                     result.put(skill, repos);
                 });

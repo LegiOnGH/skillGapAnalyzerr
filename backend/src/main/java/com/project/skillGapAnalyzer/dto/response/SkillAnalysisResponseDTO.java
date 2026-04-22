@@ -17,7 +17,7 @@ public class SkillAnalysisResponseDTO {
     private List<String> matchedSkills;
     private List<String> missingSkills;
     private int progress;
-    private Map<String, List<String>> recommendedResources;
-    private Map<String, List<RepoDTO>> recommendedRepositories;
+    private Map<String, List<String>> resourcesBySkill;
+    private Map<String, List<RepoDTO>> reposBySkill;
 
 }

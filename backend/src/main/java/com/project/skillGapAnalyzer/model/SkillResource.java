@@ -20,7 +20,7 @@ public class SkillResource {
     @Id
     private String id;
 
-    @Indexed(unique = true)
+    @Indexed(name = "unique_skill_name", unique = true)
     private String skill;
 
     private List<String> resources;

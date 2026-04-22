@@ -20,9 +20,10 @@ public class Role {
     @Id
     private String id;
 
-    @Indexed(unique = true)
+    @Indexed(name = "unique_role_name",unique = true)
     private String roleName;
 
+    @Indexed
     private String category;
 
     private List<String> skills;

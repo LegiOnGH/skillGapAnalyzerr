@@ -1,6 +1,5 @@
 package com.project.skillGapAnalyzer.dto.request;
 
-import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -10,9 +9,9 @@ import lombok.Data;
 @Data
 public class SignupRequestDTO {
 
+    @NotBlank(message = "Username required")
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
     @Pattern(regexp = "^\\S+$", message = "Username must not contain spaces")
-    @NotBlank(message = "Username required")
     private String userName;
 
     @NotBlank(message = "Email required")
@@ -20,8 +19,10 @@ public class SignupRequestDTO {
     private String email;
 
     @NotBlank(message = "Password required")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-            message = "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number and one special character.")
+    @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters")
+    @Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).*$",
+            message = "Password must include uppercase, lowercase, number and special character"
+    )
     private String password;
-
 }

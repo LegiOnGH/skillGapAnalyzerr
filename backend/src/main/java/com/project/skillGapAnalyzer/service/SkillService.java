@@ -55,7 +55,7 @@ public class SkillService {
         Map<String, List<String>> resources = getResourcesForMissingSkills(missing);
 
         Map<String, List<RepoDTO>> repos = includeRepos
-                ? gitHubService.getReposForSkills(missing, experienceLevel.name().toLowerCase()).getRepos()
+                ? gitHubService.getReposForSkills(missing, experienceLevel).getRepos()
                 : Collections.emptyMap();
 
         logger.info("Analysis done: matched={}, missing={}, progress={}%",

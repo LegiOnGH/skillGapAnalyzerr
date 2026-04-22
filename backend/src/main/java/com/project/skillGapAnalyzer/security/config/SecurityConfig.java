@@ -1,11 +1,14 @@
 package com.project.skillGapAnalyzer.security.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.skillGapAnalyzer.dto.response.ErrorResponseDTO;
 import com.project.skillGapAnalyzer.security.jwt.JWTFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.*;
-
+import java.time.Instant;
 import java.util.List;
 
 @Configuration
@@ -35,31 +38,42 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+        ObjectMapper mapper = new ObjectMapper();
+
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) -> {
-
-                            logger.warn("Unauthorized access attempt: {}", request.getRequestURI());
-
+                        .authenticationEntryPoint((request, response,
+                                                   authException) -> {
+                            logger.warn("Unauthorized access: {} {}",
+                                    request.getMethod(), request.getRequestURI());
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
-
-                            response.getWriter().write("""
-                                {
-                                    "message": "Unauthorized",
-                                    "status": 401
-                                }
-                            """);
+                            ErrorResponseDTO error = new ErrorResponseDTO(
+                                    "Unauthorized",
+                                    HttpStatus.UNAUTHORIZED,
+                                    Instant.now()
+                            );
+                            mapper.writeValue(response.getWriter(), error);
+                        })
+                        .accessDeniedHandler((request, response,
+                                              accessDeniedException) -> {
+                            logger.warn("Forbidden access: {} {}",
+                                    request.getMethod(), request.getRequestURI());
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            ErrorResponseDTO error = new ErrorResponseDTO(
+                                    "You do not have permission to perform this action",
+                                    HttpStatus.FORBIDDEN,
+                                    Instant.now()
+                            );
+                            mapper.writeValue(response.getWriter(), error);
                         })
                 )
-
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/**",
@@ -68,9 +82,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-
                 .build();
     }
 

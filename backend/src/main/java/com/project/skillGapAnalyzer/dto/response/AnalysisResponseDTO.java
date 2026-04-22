@@ -2,7 +2,8 @@ package com.project.skillGapAnalyzer.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import java.time.LocalDateTime;
+
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -13,5 +14,5 @@ public class AnalysisResponseDTO {
     private String targetRole;
     private List<String> missingSkills;
     private int progress;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }

@@ -11,6 +11,7 @@ import com.project.skillGapAnalyzer.service.SkillResourceService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -35,64 +36,63 @@ public class AdminController {
     }
 
     // 🔹 Create Category
-    @PostMapping("/category")
+    @PostMapping("/categories")
     public ResponseEntity<CategoryResponseDTO> createCategory(@Valid @RequestBody CategoryRequestDTO category) {
         logger.info("Admin creating category: {}", category.getName());
-        return ResponseEntity.ok(categoryService.createCategory(category));
+        CategoryResponseDTO response = categoryService.createCategory(category);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     //create role
-    @PostMapping("/role")
+    @PostMapping("/roles")
     public ResponseEntity<RoleResponseDTO> createRole(@Valid @RequestBody RoleRequestDTO role) {
-
-        logger.info("Creating role: {}", role.getRoleName());
+        logger.info("Admin creating role: {}", role.getRoleName());
         RoleResponseDTO created = roleService.createRole(role);
-        return ResponseEntity.ok(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     //update role
-    @PatchMapping("/role/{id}")
+    @PatchMapping("/roles/{id}")
     public ResponseEntity<RoleResponseDTO> updateRole(
             @PathVariable String id,
             @Valid @RequestBody RoleUpdateDTO dto) {
-
-        logger.info("Updating role: {}", id);
-        RoleResponseDTO role = roleService.updateRole(id, dto);
-        return ResponseEntity.ok(role);
+        logger.info("Admin updating role: {}", id);
+        RoleResponseDTO updated = roleService.updateRole(id, dto);
+        return ResponseEntity.ok(updated);
     }
 
     //delete role
-    @DeleteMapping("/role/{id}")
+    @DeleteMapping("/roles/{id}")
     public ResponseEntity<MessageResponseDTO> deleteRole(@PathVariable String id) {
-
-        logger.info("Deleting role: {}", id);
-
+        logger.info("Admin deleting role: {}", id);
         roleService.deleteRole(id);
-
         return ResponseEntity.ok(
                 new MessageResponseDTO("Role deleted successfully"));
     }
 
     // 🔹 Add Skill Resource
-    @PostMapping("/resource")
+    @PostMapping("/resources")
     public ResponseEntity<SkillResourceResponseDTO> addResource(@Valid @RequestBody SkillResourceRequestDTO resource) {
         logger.info("Admin adding resource for skill: {}", resource.getSkill());
-        return ResponseEntity.ok(skillResourceService.addResource(resource));
+        SkillResourceResponseDTO response =
+                skillResourceService.addResource(resource);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PatchMapping("/resource/{id}")
+    @PatchMapping("/resources/{id}")
     public ResponseEntity<SkillResourceResponseDTO> updateResource(
             @PathVariable String id,
-            @RequestBody SkillResourceUpdateDTO resource) {
-
-        return ResponseEntity.ok(skillResourceService.updateResource(id, resource));
+            @Valid @RequestBody SkillResourceUpdateDTO resource) {
+        logger.debug("Updating resource with id: {}", id);
+        SkillResourceResponseDTO updated =
+                skillResourceService.updateResource(id, resource);
+        return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/resource/{id}")
-    public ResponseEntity<MessageResponseDTO> deleteResource(@PathVariable String id, @RequestBody SkillResourceDeleteDTO dto) {
-
-        skillResourceService.deleteResource(id, dto.getResourceToDelete());
-
+    @DeleteMapping("/resources/{id}")
+    public ResponseEntity<MessageResponseDTO> deleteResource(@PathVariable String id, @RequestParam String resource) {
+        logger.info("Admin deleting resource '{}' for id: {}", resource, id);
+        skillResourceService.deleteResource(id, resource);
         return ResponseEntity.ok(
                  new MessageResponseDTO("Resource deleted"));
     }

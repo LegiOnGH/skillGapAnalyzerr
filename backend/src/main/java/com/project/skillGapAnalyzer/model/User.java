@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
-@Document(collection = "user")
+@Document(collection = "users")
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -20,15 +20,14 @@ public class User {
     @Id
     private String id;
 
-    @Indexed(unique = true)
+    @Indexed(name = "unique_username", unique = true)
     private String userName;
 
-    @Indexed(unique = true)
+    @Indexed(name = "unique_email", unique = true)
     private String email;
 
     @JsonIgnore
     private String password;
 
     private UserRole role;
-
 }

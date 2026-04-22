@@ -48,8 +48,8 @@ public class JWTUtil {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (JwtException e) {
-            logger.warn("Invalid JWT token: {}", e.getMessage());
-            throw new RuntimeException("Invalid JWT token");
+            logger.warn("Invalid JWT token");
+            throw e;
         }
     }
 
@@ -70,8 +70,8 @@ public class JWTUtil {
             return claims.getSubject().equals(userName)
                     && claims.getExpiration().after(new Date());
 
-        } catch (Exception e) {
-            logger.warn("Token validation failed: {}", e.getMessage());
+        } catch (JwtException e) {
+            logger.warn("Token validation failed");
             return false;
         }
     }

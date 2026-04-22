@@ -3,7 +3,6 @@ package com.project.skillGapAnalyzer.util;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class StringNormalizer {
 
@@ -24,20 +23,22 @@ public class StringNormalizer {
                 .map(StringNormalizer::normalize)
                 .filter(s -> s != null && !s.isEmpty())
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static List<String> normalizeListPreserveCase(List<String> inputs) {
         if (inputs == null) return List.of();
 
+        Set<String> seen = new HashSet<>();
+
         return inputs.stream()
                 .map(StringNormalizer::normalizePreserveCase)
                 .filter(s -> s != null && !s.isEmpty())
-                .distinct()
-                .collect(Collectors.toList());
+                .filter(s -> seen.add(s.toLowerCase()))
+                .toList();
     }
 
     public static Set<String> normalizeSet(List<String> inputs) {
-        return new HashSet<>(normalizeList(inputs));
+        return Set.copyOf(normalizeList(inputs));
     }
 }

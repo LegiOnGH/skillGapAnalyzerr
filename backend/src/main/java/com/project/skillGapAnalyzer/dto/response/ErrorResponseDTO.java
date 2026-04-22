@@ -2,14 +2,15 @@ package com.project.skillGapAnalyzer.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @AllArgsConstructor
 public class ErrorResponseDTO {
 
     private String message;
-    private int status;
-    private LocalDateTime timestamp;
+    private HttpStatus status;
+    private Instant timestamp;
 }

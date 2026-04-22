@@ -8,4 +8,5 @@ import java.util.Optional;
 @Repository
 public interface SkillResourceRepository extends MongoRepository<SkillResource, String> {
     Optional<SkillResource> findBySkillIgnoreCase(String skill);
+    boolean existsBySkillIgnoreCase(String skill);
 }

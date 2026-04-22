@@ -76,6 +76,6 @@ public class AuthService {
 
         logger.info("Login successful for username: {}", dto.getUserName());
 
-        return new LoginResponseDTO(token, user.getRole(), user.getId());
+        return new LoginResponseDTO(token, "Bearer", user.getRole(), user.getId());
     }
 }

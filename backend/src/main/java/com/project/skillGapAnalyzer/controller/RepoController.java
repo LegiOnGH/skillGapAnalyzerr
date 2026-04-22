@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/repo")
+@RequestMapping("/repos")
 public class RepoController {
 
     private static final Logger logger = LoggerFactory.getLogger(RepoController.class);
@@ -24,17 +24,15 @@ public class RepoController {
     @PostMapping("/recommend")
     public ResponseEntity<RepoResponseDTO> recommendRepos(
             @Valid @RequestBody RepoRequestDTO request) {
-
         logger.info("Repo recommendation requested for skills: {}", request.getSkills());
-
+        logger.debug("Experience level: {}", request.getExperienceLevel());
         RepoResponseDTO repos =
                 gitHubService.getReposForSkills(
                         request.getSkills(),
-                        request.getExperienceLevel().name()
+                        request.getExperienceLevel()
                 );
 
-        logger.info("Repo recommendation completed");
-
+        logger.info("Repo recommendation completed for {} skills", request.getSkills().size());
         return ResponseEntity.ok(repos);
     }
 }

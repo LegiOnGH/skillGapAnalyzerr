@@ -18,6 +18,6 @@ public class Category {
     @Id
     private String id;
 
-    @Indexed(unique = true)
+    @Indexed(name = "unique_category_name", unique = true)
     private String name;
 }

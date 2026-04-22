@@ -8,13 +8,16 @@ import com.project.skillGapAnalyzer.service.CategoryService;
 import com.project.skillGapAnalyzer.service.RoleService;
 import com.project.skillGapAnalyzer.service.SkillService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/skills")
 public class SkillController {
@@ -34,51 +37,41 @@ public class SkillController {
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategories(){
         logger.info("Fetching all categories");
-
         List<CategoryResponseDTO> categories = categoryService.getAllCategories();
-
         logger.info("Fetched {} categories", categories.size());
-
         return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/roles")
-    public ResponseEntity<List<RoleResponseDTO>> getRoles(@RequestParam String category){
-        logger.info("Fetching roles for category: {}", category);
-
+    public ResponseEntity<List<RoleResponseDTO>> getRoles(
+            @RequestParam @NotBlank String category){
         List<RoleResponseDTO> roles = roleService.getRoles(category);
-
         logger.info("Fetched {} roles for category: {}", roles.size(), category);
-
         return ResponseEntity.ok(roles);
     }
 
-    @GetMapping("/role/{roleName}")
-    public ResponseEntity<RoleResponseDTO> getRoleByName(@PathVariable String roleName){
-        logger.info("Fetching role by name: {}", roleName);
-
+    @GetMapping("/roles/{roleName}")
+    public ResponseEntity<RoleResponseDTO> getRoleByName(
+            @PathVariable @NotBlank String roleName){
         RoleResponseDTO role = roleService.getRoleByName(roleName);
-
-        logger.info("Role found: {}", roleName);
-
+        logger.info("Fetched role: {}", roleName);
         return ResponseEntity.ok(role);
     }
 
     @PostMapping("/analyze")
     public ResponseEntity<SkillAnalysisResponseDTO> analyzeSkills(
             @Valid @RequestBody SkillGapRequestDTO request){
-
-        logger.info("Skill analysis started for role: {}",
-                request.getTargetRole());
-
+        logger.info("Skill analysis started | role: {}, skills: {}, includeRepos: {}",
+                request.getTargetRole(),
+                request.getUserSkills().size(),
+                request.isIncludeRepos());
         SkillAnalysisResponseDTO result =
-                skillService.analyzeSkills(request.getUserSkills(),
+                skillService.analyzeSkills(
+                        request.getUserSkills(),
                         request.getTargetRole(),
                         request.getExperienceLevel(),
                         request.isIncludeRepos());
-
         logger.info("Skill analysis completed for role: {}", request.getTargetRole());
-
         return ResponseEntity.ok(result);
     }
 }

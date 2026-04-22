@@ -8,6 +8,10 @@ import com.project.skillGapAnalyzer.model.Analysis;
 import com.project.skillGapAnalyzer.model.User;
 import com.project.skillGapAnalyzer.repository.AnalysisRepository;
 import com.project.skillGapAnalyzer.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -47,22 +51,22 @@ public class AnalysisService {
         analysisRepository.save(analysis);
     }
 
-    public List<AnalysisResponseDTO> getUserAnalysis() {
+    public Page<AnalysisResponseDTO> getUserAnalysis(int page, int size) {
 
         String userId = getCurrentUserId();
 
-        List<Analysis> analysisList =
-                analysisRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        Pageable pageable = PageRequest.of(page,size, Sort.by("createdAt").descending());
 
-        return analysisList.stream()
-                .map(a -> new AnalysisResponseDTO(
-                        a.getId(),
-                        a.getTargetRole(),
-                        a.getMissingSkills(),
-                        a.getProgress(),
-                        a.getCreatedAt()
-                ))
-                .toList();
+        Page<Analysis> analysisPage =
+                analysisRepository.findByUserId(userId, pageable);
+
+        return analysisPage.map(a -> new AnalysisResponseDTO(
+                a.getId(),
+                a.getTargetRole(),
+                a.getMissingSkills(),
+                a.getProgress(),
+                a.getCreatedAt()
+        ));
     }
 
     private String getCurrentUserId() {

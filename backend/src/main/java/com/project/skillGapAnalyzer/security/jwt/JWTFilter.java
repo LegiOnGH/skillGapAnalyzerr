@@ -1,6 +1,9 @@
 package com.project.skillGapAnalyzer.security.jwt;
 
 import com.project.skillGapAnalyzer.service.UserDetailsServiceImpl;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -32,25 +36,38 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
 
-        String token = null;
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String token = authHeader.substring(7);
+
+        if (token.isBlank()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String userName = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        try {
+            userName = jwtUtil.extractUserName(token);
+        } catch (ExpiredJwtException e) {
+            logger.warn("JWT expired for request: {} {}", request.getMethod(), request.getRequestURI());
+        } catch (MalformedJwtException | SignatureException e) {
+            logger.warn("Invalid JWT token for request: {} {}", request.getMethod(), request.getRequestURI());
+        } catch (IllegalArgumentException e) {
+            logger.warn("JWT token is empty or invalid");
+        }
 
-            token = authHeader.substring(7);
+        if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             try {
-                userName = jwtUtil.extractUserName(token);
-            } catch (Exception e) {
-                logger.warn("Invalid JWT token: {}", e.getMessage());
-            }
-
-            if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
 
                 if (jwtUtil.validateToken(token, userDetails.getUsername())) {
@@ -68,10 +85,14 @@ public class JWTFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                    logger.info("User authenticated successfully: {}", userName);
+                    logger.debug("User authenticated: {}", userName);
+
                 } else {
                     logger.warn("JWT validation failed for user: {}", userName);
                 }
+
+            } catch (UsernameNotFoundException e) {
+                logger.warn("User not found for token: {}", userName);
             }
         }
 
