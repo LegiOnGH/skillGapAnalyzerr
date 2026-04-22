@@ -20,9 +20,10 @@ public class Analysis {
     @Id
     private String id;
     private String userId;
-    private String roleName;
-    private List<String> matchedSkills;
+    private String targetRole;
+    private List<String> userSkills;
     private List<String> missingSkills;
     private int progress;
     private LocalDateTime createdAt;
+
 }

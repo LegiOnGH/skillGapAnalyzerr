@@ -1,30 +1,76 @@
 package com.project.skillGapAnalyzer.service;
 
-import com.project.skillGapAnalyzer.dto.request.SaveAnalysisRequestDTO;
+import com.project.skillGapAnalyzer.dto.request.SkillGapRequestDTO;
+import com.project.skillGapAnalyzer.dto.response.AnalysisResponseDTO;
+import com.project.skillGapAnalyzer.dto.response.SkillAnalysisResponseDTO;
+import com.project.skillGapAnalyzer.exceptions.ResourceNotFoundException;
 import com.project.skillGapAnalyzer.model.Analysis;
+import com.project.skillGapAnalyzer.model.User;
 import com.project.skillGapAnalyzer.repository.AnalysisRepository;
+import com.project.skillGapAnalyzer.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
 
 @Service
 public class AnalysisService {
 
     private final AnalysisRepository analysisRepository;
+    private final UserRepository userRepository;
 
-    public AnalysisService(AnalysisRepository analysisRepository) {
+    public AnalysisService(AnalysisRepository analysisRepository, UserRepository userRepository) {
         this.analysisRepository = analysisRepository;
+        this.userRepository = userRepository;
     }
 
-    public void saveAnalysis(SaveAnalysisRequestDTO request) {
+    @Transactional
+    public void saveAnalysis(SkillGapRequestDTO request,
+                             SkillAnalysisResponseDTO result) {
+
+
+        String userId = getCurrentUserId();
 
         Analysis analysis = Analysis.builder()
-                .userId(request.getUserId())
-                .roleName(request.getTargetRole())
-                .missingSkills(request.getMissingSkills())
-                .createdAt(LocalDateTime.now())
+                .userId(userId)
+                .targetRole(request.getTargetRole())
+                .userSkills(request.getUserSkills())
+                .missingSkills(result.getMissingSkills())
+                .progress(result.getProgress())
+                .createdAt(LocalDateTime.now(ZoneOffset.UTC))
                 .build();
 
         analysisRepository.save(analysis);
+    }
+
+    public List<AnalysisResponseDTO> getUserAnalysis() {
+
+        String userId = getCurrentUserId();
+
+        List<Analysis> analysisList =
+                analysisRepository.findByUserIdOrderByCreatedAtDesc(userId);
+
+        return analysisList.stream()
+                .map(a -> new AnalysisResponseDTO(
+                        a.getId(),
+                        a.getTargetRole(),
+                        a.getMissingSkills(),
+                        a.getProgress(),
+                        a.getCreatedAt()
+                ))
+                .toList();
+    }
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        return userRepository.findByUserName(username)
+                .map(User::getId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 }

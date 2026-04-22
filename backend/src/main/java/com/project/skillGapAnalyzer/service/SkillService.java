@@ -3,6 +3,7 @@ package com.project.skillGapAnalyzer.service;
 import com.project.skillGapAnalyzer.dto.response.RoleResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.SkillAnalysisResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.RepoDTO;
+import com.project.skillGapAnalyzer.enums.Experience;
 import com.project.skillGapAnalyzer.repository.SkillResourceRepository;
 import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ public class SkillService {
     public SkillAnalysisResponseDTO analyzeSkills(
             List<String> userSkills,
             String targetRole,
-            String experienceLevel,
+            Experience experienceLevel,
             boolean includeRepos) {
 
         logger.info("Starting skill analysis for role: {}", targetRole);
@@ -54,7 +55,7 @@ public class SkillService {
         Map<String, List<String>> resources = getResourcesForMissingSkills(missing);
 
         Map<String, List<RepoDTO>> repos = includeRepos
-                ? gitHubService.getReposForSkills(missing, experienceLevel).getRepos()
+                ? gitHubService.getReposForSkills(missing, experienceLevel.name().toLowerCase()).getRepos()
                 : Collections.emptyMap();
 
         logger.info("Analysis done: matched={}, missing={}, progress={}%",

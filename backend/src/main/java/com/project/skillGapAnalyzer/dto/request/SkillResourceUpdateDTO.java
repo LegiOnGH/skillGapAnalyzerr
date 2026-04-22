@@ -5,7 +5,6 @@ import java.util.List;
 
 @Data
 public class SkillResourceUpdateDTO {
-
-    private String skill;
-    private List<String> resources;
+    private String oldResource;
+    private String newResource;
 }

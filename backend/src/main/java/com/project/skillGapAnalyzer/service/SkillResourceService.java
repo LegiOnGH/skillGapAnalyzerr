@@ -13,7 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SkillResourceService {
@@ -32,65 +35,102 @@ public class SkillResourceService {
 
         String skill = StringNormalizer.normalize(dto.getSkill());
 
-        logger.info("Adding resource for skill: {}", skill);
+        List<String> newResources = StringNormalizer.normalizeListPreserveCase(dto.getResources());
 
-        if (repository.findBySkillIgnoreCase(skill).isPresent()) {
-            throw new BadRequestException("Resource already exists for skill: " + skill);
-        }
-
-        List<String> cleanedResources = StringNormalizer.normalizeListPreserveCase(dto.getResources());
-
-        if (cleanedResources.isEmpty()) {
+        if (newResources.isEmpty()) {
             throw new BadRequestException("Resources cannot be empty");
         }
 
-        SkillResource resource = SkillResource.builder()
-                .skill(skill)
-                .resources(cleanedResources)
-                .build();
+        Optional<SkillResource> optional = repository.findBySkillIgnoreCase(skill);
 
-        SkillResource saved = repository.save(resource);
+        if (optional.isPresent()) {
 
-        logger.info("Resource created for skill: {}", skill);
+            SkillResource existing = optional.get();
+
+            List<String> existingResources =
+                    existing.getResources() != null ? existing.getResources() : new ArrayList<>();
+
+            List<String> updatedResources = new ArrayList<>(existingResources);
+            updatedResources.addAll(newResources);
+
+            existing.setResources(
+                    new LinkedHashSet<>(updatedResources).stream().toList()
+            );
+
+            SkillResource saved = repository.save(existing);
+
+            return skillResourceMapper.toDTO(saved);
+
+        } else {
+
+            SkillResource resource = SkillResource.builder()
+                    .skill(skill)
+                    .resources(newResources)
+                    .build();
+
+            SkillResource saved = repository.save(resource);
+
+            return skillResourceMapper.toDTO(saved);
+        }
+    }
+
+    public SkillResourceResponseDTO updateResource(
+            String id,
+            SkillResourceUpdateDTO dto
+    ) {
+
+        SkillResource existing = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
+
+        List<String> resources = existing.getResources();
+
+        if (resources == null || resources.isEmpty()) {
+            throw new BadRequestException("No resources found for this skill");
+        }
+
+        String normalizedOld = StringNormalizer.normalizePreserveCase(dto.getOldResource());
+        String normalizedNew = StringNormalizer.normalizePreserveCase(dto.getNewResource());
+
+        boolean removed = resources.removeIf(r -> r.equalsIgnoreCase(normalizedOld));
+
+        if (!removed) {
+            throw new BadRequestException("Resource not found: " + dto.getOldResource());
+        }
+
+        if (resources.stream().noneMatch(r -> r.equalsIgnoreCase(normalizedNew))) {
+            resources.add(normalizedNew);
+        }
+
+        existing.setResources(resources);
+
+        SkillResource saved = repository.save(existing);
 
         return skillResourceMapper.toDTO(saved);
     }
 
-    public SkillResourceResponseDTO updateResource(String id, SkillResourceUpdateDTO dto) {
-
-        logger.info("Updating resource: {}", id);
+    public void deleteResource(String id, String resourceToDelete) {
 
         SkillResource existing = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 
-        if (dto.getResources() != null && !dto.getResources().isEmpty()) {
+        List<String> resources = existing.getResources();
 
-            List<String> cleanedResources = StringNormalizer.normalizeListPreserveCase(dto.getResources());
-
-            if (cleanedResources.isEmpty()) {
-                throw new BadRequestException("Resources cannot be empty");
-            }
-
-            existing.setResources(cleanedResources);
+        if (resources == null || resources.isEmpty()) {
+            throw new BadRequestException("No resources found for this skill");
         }
 
-        SkillResource updated = repository.save(existing);
+        String normalized = StringNormalizer.normalizePreserveCase(resourceToDelete);
 
-        logger.info("Resource updated successfully: {}", id);
+        boolean removed = resources.removeIf(r -> r.equalsIgnoreCase(normalized));
 
-        return skillResourceMapper.toDTO(updated);
-    }
-
-    public void deleteResource(String id) {
-
-        logger.info("Deleting resource: {}", id);
-
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Resource not found with id: " + id);
+        if (!removed) {
+            throw new BadRequestException("Resource not found: " + resourceToDelete);
         }
 
-        repository.deleteById(id);
+        existing.setResources(resources);
 
-        logger.info("Resource deleted successfully: {}", id);
+        SkillResource saved = repository.save(existing);
+
+        skillResourceMapper.toDTO(saved);
     }
 }

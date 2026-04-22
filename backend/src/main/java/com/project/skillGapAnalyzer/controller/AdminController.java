@@ -89,9 +89,9 @@ public class AdminController {
     }
 
     @DeleteMapping("/resource/{id}")
-    public ResponseEntity<MessageResponseDTO> deleteResource(@PathVariable String id) {
+    public ResponseEntity<MessageResponseDTO> deleteResource(@PathVariable String id, @RequestBody SkillResourceDeleteDTO dto) {
 
-        skillResourceService.deleteResource(id);
+        skillResourceService.deleteResource(id, dto.getResourceToDelete());
 
         return ResponseEntity.ok(
                  new MessageResponseDTO("Resource deleted"));

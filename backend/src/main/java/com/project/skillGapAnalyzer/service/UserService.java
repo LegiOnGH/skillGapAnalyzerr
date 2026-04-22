@@ -7,6 +7,8 @@ import com.project.skillGapAnalyzer.model.User;
 import com.project.skillGapAnalyzer.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,12 +45,34 @@ public class UserService {
         logger.info("User promoted successfully: {}", userId);
     }
 
-    public void deleteUser(String userId){
+    public void deleteUser(String userId) {
 
-        logger.info("Deleting user with id: {}", userId);
+        logger.info("Delete request received for userId: {}", userId);
 
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found with id: " + userId);
+        User userToDelete = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found with id: " + userId)
+                );
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserName = authentication.getName();
+
+        User currentUser = userRepository.findByUserName(currentUserName)
+                .orElseThrow(() ->
+                        new RuntimeException("Authenticated user not found")
+                );
+
+        if (currentUser.getId().equals(userToDelete.getId())) {
+            throw new BadRequestException("Super Admin cannot delete himself");
+        }
+
+        if (userToDelete.getRole() == UserRole.ROLE_SUPER_ADMIN) {
+
+            long superAdminCount = userRepository.countByRole(UserRole.ROLE_SUPER_ADMIN);
+
+            if (superAdminCount <= 1) {
+                throw new BadRequestException("Cannot delete the last Super Admin");
+            }
         }
 
         userRepository.deleteById(userId);

@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class SkillGapRequestDTO{
+public class SkillGapRequestDTO {
 
     @NotEmpty(message = "Skills cannot be empty")
     private List<@NotBlank(message = "Skill cannot be blank") String> userSkills;
@@ -19,5 +19,4 @@ public class SkillGapRequestDTO{
     private Experience experienceLevel = Experience.BEGINNER;
 
     private boolean includeRepos = false;
-
 }

@@ -71,12 +71,10 @@ public class SkillController {
         logger.info("Skill analysis started for role: {}",
                 request.getTargetRole());
 
-        String experienceLevel = request.getExperienceLevel().name().toLowerCase();
-
         SkillAnalysisResponseDTO result =
                 skillService.analyzeSkills(request.getUserSkills(),
                         request.getTargetRole(),
-                        experienceLevel,
+                        request.getExperienceLevel(),
                         request.isIncludeRepos());
 
         logger.info("Skill analysis completed for role: {}", request.getTargetRole());

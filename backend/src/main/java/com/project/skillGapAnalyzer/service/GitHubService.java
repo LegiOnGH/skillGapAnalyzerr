@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +24,10 @@ public class GitHubService {
     private final RestTemplate restTemplate;
 
     @Value("${github.url}")
-    private String github;
+    private String githubURL;
+
+    @Value("${github.token}")
+    private String githubToken;
 
     public GitHubService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -34,31 +38,51 @@ public class GitHubService {
         logger.info("Fetching repositories for query: {}", query);
 
         String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
-        String url = github + encodedQuery;
+        String url = githubURL + encodedQuery;
 
-        GitHubSearchResponseDTO response;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+        if(githubToken != null && !githubToken.isBlank()){
+            headers.setBearerAuth(githubToken);
+        } else {
+            logger.warn("GitHub token not configured. Using unauthenticated requests (rate limits may apply)");
+        }
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<GitHubSearchResponseDTO> response;
 
         try {
-            response = restTemplate.getForObject(url, GitHubSearchResponseDTO.class);
+            response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    GitHubSearchResponseDTO.class
+            );
         } catch (Exception e) {
             logger.error("Error calling GitHub API for query: {}", query, e);
             throw new ExternalServiceException("Failed to fetch repositories from GitHub");
         }
 
-        if (response == null || response.getItems() == null) {
+        GitHubSearchResponseDTO body = response.getBody();
+
+        if (body == null || body.getItems() == null) {
             logger.error("Invalid response from GitHub API for query: {}", query);
             throw new ExternalServiceException("Invalid response from GitHub API");
         }
 
-        return response.getItems().stream()
+
+        String remaining = response.getHeaders().getFirst("X-RateLimit-Remaining");
+        logger.info("GitHub rate limit remaining: {}", remaining);
+
+        return body.getItems().stream()
                 .limit(MAX_REPOS)
-                .map(item -> {
-                    RepoDTO dto = new RepoDTO();
-                    dto.setName(item.getName());
-                    dto.setUrl(item.getHtmlUrl());
-                    dto.setDescription(item.getDescription());
-                    return dto;
-                })
+                .map(item -> RepoDTO.builder()
+                        .name(item.getName())
+                        .url(item.getHtmlUrl())
+                        .description(item.getDescription())
+                        .build())
                 .toList();
     }
 
