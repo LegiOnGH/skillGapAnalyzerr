@@ -1,0 +1,31 @@
+# Ignore everything inside target except jar
+target/*
+!target/*.jar
+
+# Git
+.git
+.gitignore
+
+# Node (just in case)
+node_modules/
+
+# Env (NEVER push secrets)
+.env
+.env.*
+*.env
+
+# Logs
+*.log
+logs/
+
+# IDE junk
+.idea
+.vscode
+*.iml
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Optional
+README.md
