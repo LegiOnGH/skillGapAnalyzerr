@@ -33,7 +33,7 @@ public class RoleService {
 
     public RoleResponseDTO createRole(RoleRequestDTO dto) {
 
-        logger.info("Creating role: {}", dto.getRoleName());
+        logger.debug("Creating role: {}", dto.getRoleName());
 
         String roleName = StringNormalizer.normalizePreserveCase(dto.getRoleName());
         String category = StringNormalizer.normalize(dto.getCategory());
@@ -67,7 +67,7 @@ public class RoleService {
 
     public RoleResponseDTO updateRole(String id, RoleUpdateDTO dto) {
 
-        logger.info("Updating role: {}", id);
+        logger.debug("Updating role: {}", id);
 
         Role existing = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
@@ -107,27 +107,26 @@ public class RoleService {
 
     public void deleteRole(String id) {
 
-        logger.info("Deleting role: {}", id);
+        logger.debug("Deleting role: {}", id);
 
-        if (!roleRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Role not found with id: " + id);
-        }
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
 
-        roleRepository.deleteById(id);
+        roleRepository.delete(role);
 
         logger.info("Role deleted successfully: {}", id);
     }
 
     public List<RoleResponseDTO> getRoles(String category){
 
-        logger.info("Fetching roles for category: {}", category);
-
-        List<Role> roles = roleRepository.findByCategoryIgnoreCase(category);
+        logger.debug("Fetching roles for category: {}", category);
+        String normalizedCategory = StringNormalizer.normalize(category);
+        List<Role> roles = roleRepository.findByCategoryIgnoreCase(normalizedCategory);
 
         if (roles.isEmpty()) {
-            logger.warn("No roles found for category: {}", category);
+            logger.info("No roles found for category: {}", normalizedCategory);
         } else {
-            logger.info("Fetched {} roles for category: {}", roles.size(), category);
+            logger.debug("Fetched {} roles for category: {}", roles.size(), normalizedCategory);
         }
 
         return roles.stream()
@@ -137,12 +136,13 @@ public class RoleService {
 
     public RoleResponseDTO getRoleByName(String roleName){
 
-        logger.info("Fetching role by name: {}", roleName);
+        logger.debug("Fetching role by name: {}", roleName);
 
-        Role role = roleRepository.findByRoleNameIgnoreCase(roleName)
+        String normalizedName = StringNormalizer.normalizePreserveCase(roleName);
+        Role role = roleRepository.findByRoleNameIgnoreCase(normalizedName)
                 .orElseThrow(() -> {
-                    logger.warn("Role not found: {}", roleName);
-                    return new ResourceNotFoundException("Role not found: " + roleName);
+                    logger.warn("Role not found: {}", normalizedName);
+                    return new ResourceNotFoundException("Role not found: " + normalizedName);
                 });
 
         return roleMapper.toDTO(role);

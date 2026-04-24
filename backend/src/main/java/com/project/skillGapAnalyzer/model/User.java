@@ -20,10 +20,10 @@ public class User {
     @Id
     private String id;
 
-    @Indexed(name = "unique_username", unique = true)
+    @Indexed(name = "userName", unique = true)
     private String userName;
 
-    @Indexed(name = "unique_email", unique = true)
+    @Indexed(name = "email", unique = true)
     private String email;
 
     @JsonIgnore

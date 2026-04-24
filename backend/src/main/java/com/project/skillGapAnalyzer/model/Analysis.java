@@ -28,7 +28,6 @@ public class Analysis {
     private List<String> userSkills;
     private List<String> missingSkills;
     private int progress;
-
     @Indexed
     private Instant createdAt;
 }

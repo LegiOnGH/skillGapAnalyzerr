@@ -36,7 +36,7 @@ public class SkillController {
 
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategories(){
-        logger.info("Fetching all categories");
+        logger.debug("Fetching all categories");
         List<CategoryResponseDTO> categories = categoryService.getAllCategories();
         logger.info("Fetched {} categories", categories.size());
         return ResponseEntity.ok(categories);

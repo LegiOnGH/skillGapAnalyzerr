@@ -1,6 +1,7 @@
 package com.project.skillGapAnalyzer.controller;
 
 import com.project.skillGapAnalyzer.dto.request.SkillGapRequestDTO;
+import com.project.skillGapAnalyzer.dto.response.AnalysisDetailResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.AnalysisResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.SkillAnalysisResponseDTO;
 import com.project.skillGapAnalyzer.service.AnalysisService;
@@ -52,6 +53,15 @@ public class AnalysisController {
         logger.info("Fetching analysis history | page: {}, size: {}", page, size);
         return ResponseEntity.ok(
                 analysisService.getUserAnalysis(page, size)
+        );
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AnalysisDetailResponseDTO> getAnalysisById(@PathVariable String id) {
+
+        logger.info("Fetching analysis with id: {}", id);
+        return ResponseEntity.ok(
+                analysisService.getAnalysisById(id)
         );
     }
 }

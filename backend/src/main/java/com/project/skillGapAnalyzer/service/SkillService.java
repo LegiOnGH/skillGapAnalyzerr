@@ -35,17 +35,24 @@ public class SkillService {
             Experience experienceLevel,
             boolean includeRepos) {
 
-        logger.info("Starting skill analysis for role: {}", targetRole);
+        String normalizedRole = StringNormalizer.normalizePreserveCase(targetRole);
 
-        RoleResponseDTO role = roleService.getRoleByName(targetRole);
+        logger.info("Starting skill analysis | role: {}, includeRepos: {}", normalizedRole, includeRepos);
 
-        List<String> targetSkills = role.getSkills().stream()
+        RoleResponseDTO role = roleService.getRoleByName(normalizedRole);
+
+        List<String> targetSkills = role.getSkills() == null
+                ? List.of()
+                : role.getSkills().stream()
                 .map(StringNormalizer::normalize)
                 .toList();
 
         Set<String> userSkillSet = userSkills == null
                 ? Collections.emptySet()
                 : StringNormalizer.normalizeSet(userSkills);
+
+        logger.debug("User skills count: {}, Target skills count: {}",
+                userSkillSet.size(), targetSkills.size());
 
         List<String> matched = getMatchedSkills(targetSkills, userSkillSet);
         List<String> missing = getMissingSkills(targetSkills, userSkillSet);
@@ -55,10 +62,10 @@ public class SkillService {
         Map<String, List<String>> resources = getResourcesForMissingSkills(missing);
 
         Map<String, List<RepoDTO>> repos = includeRepos
-                ? gitHubService.getReposForSkills(missing, experienceLevel).getRepos()
+                ? gitHubService.getReposForSkills(missing, experienceLevel).getReposBySkill()
                 : Collections.emptyMap();
 
-        logger.info("Analysis done: matched={}, missing={}, progress={}%",
+        logger.info("Analysis complete | matched: {}, missing: {}, progress: {}%",
                 matched.size(), missing.size(), progress);
 
         return new SkillAnalysisResponseDTO(
@@ -71,31 +78,49 @@ public class SkillService {
     }
 
     private List<String> getMatchedSkills(List<String> targetSkills, Set<String> userSkills) {
-        return targetSkills.stream()
+
+        List<String> matched = targetSkills.stream()
                 .filter(userSkills::contains)
                 .toList();
+
+        logger.debug("Matched skills count: {}", matched.size());
+
+        return matched;
     }
 
     private List<String> getMissingSkills(List<String> targetSkills, Set<String> userSkills) {
-        return targetSkills.stream()
+
+        List<String> missing = targetSkills.stream()
                 .filter(skill -> !userSkills.contains(skill))
                 .toList();
+
+        logger.debug("Missing skills count: {}", missing.size());
+
+        return missing;
     }
 
     private int calculateProgress(int matched, int total) {
-        if (total == 0) return 0;
-        return (int) (((double) matched / total) * 100);
+
+        if (total == 0) {
+            logger.warn("No target skills found. Progress set to 0%");
+            return 0;
+        }
+        int progress = Math.round(((float) matched / total) * 100);
+        logger.debug("Calculated progress: {}%", progress);
+        return progress;
     }
 
     public Map<String, List<String>> getResourcesForMissingSkills(List<String> missing) {
-
+        logger.debug("Fetching resources for {} missing skills", missing.size());
         Map<String, List<String>> resources = new HashMap<>();
-
         for (String skill : missing) {
             skillResourceRepository.findBySkillIgnoreCase(skill)
-                    .ifPresent(resource -> resources.put(skill, resource.getResources()));
+                    .ifPresent(resource -> {
+                        resources.put(skill, resource.getResources());
+                        logger.debug("Resources found for skill: {}", skill);
+                    });
         }
-
+        logger.debug("Total skills with resources found: {}", resources.size());
         return resources;
     }
 }

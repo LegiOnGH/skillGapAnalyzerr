@@ -35,7 +35,7 @@ public class UserService {
     @Transactional
     public void promoteUser(String userId){
 
-        logger.info("Promote request received for userId: {}", userId);
+        logger.debug("Promote request received for userId: {}", userId);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -43,14 +43,14 @@ public class UserService {
                     return new ResourceNotFoundException("User not found with id: " + userId);
                 });
 
-        if (user.getRole() == UserRole.ROLE_ADMIN) {
-            logger.warn("User already ADMIN: {}", userId);
-            throw new BadRequestException("User is already an ADMIN");
-        }
-
         if (user.getRole() == UserRole.ROLE_SUPER_ADMIN) {
             logger.warn("Attempt to modify SUPER_ADMIN: {}", userId);
             throw new BadRequestException("Cannot modify SUPER_ADMIN role");
+        }
+
+        if (user.getRole() == UserRole.ROLE_ADMIN) {
+            logger.warn("User already ADMIN: {}", userId);
+            throw new BadRequestException("User is already an ADMIN");
         }
 
         user.setRole(UserRole.ROLE_ADMIN);
@@ -62,7 +62,7 @@ public class UserService {
     @Transactional
     public void deleteUser(String userId) {
 
-        logger.info("Delete request received for userId: {}", userId);
+        logger.debug("Delete request received for userId: {}", userId);
 
         User userToDelete = userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -71,17 +71,22 @@ public class UserService {
                 });
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUserName = authentication.getName();
 
-        User currentUser = userRepository.findByUserName(currentUserName)
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new BadRequestException("Unauthenticated request");
+        }
+
+        String currentUserName = StringNormalizer.normalize(authentication.getName());
+
+        User currentUser = userRepository.findByUserNameIgnoreCase(currentUserName)
                 .orElseThrow(() -> {
-                    logger.error("Authenticated user not found in DB: {}", currentUserName);
+                    logger.error("Authenticated user not found in DB");
                     return new ResourceNotFoundException("Authenticated user not found");
                 });
 
         if (currentUser.getId().equals(userToDelete.getId())) {
             logger.warn("Self-deletion attempt blocked for userId: {}", userId);
-            throw new BadRequestException("Super Admin cannot delete himself");
+            throw new BadRequestException("User cannot delete their own account");
         }
 
         if (userToDelete.getRole() == UserRole.ROLE_SUPER_ADMIN) {
@@ -94,23 +99,23 @@ public class UserService {
             }
         }
 
-        userRepository.deleteById(userId);
+        userRepository.delete(userToDelete);
 
         logger.info("User deleted successfully: {}", userId);
     }
 
     public Page<UserResponseDTO> getUsers(int page, int size, String search, UserRole role) {
 
-        logger.info("Fetching users | page: {}, size: {}, search: {}, role: {}",
+        logger.debug("Fetching users | page: {}, size: {}, search: {}, role: {}",
                 page, size, search, role);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("userName").ascending());
 
-        Page<User> users;
-
         String searchText = (search != null)
                 ? StringNormalizer.normalize(search)
                 : null;
+
+        Page<User> users;
 
         if (searchText != null && role != null) {
             users = userRepository.findByUserNameContainingIgnoreCaseAndRole(searchText, role, pageable);
@@ -129,7 +134,7 @@ public class UserService {
 
     public UserResponseDTO getUserById(String id) {
 
-        logger.info("Fetching user by id: {}", id);
+        logger.debug("Fetching user by id: {}", id);
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {

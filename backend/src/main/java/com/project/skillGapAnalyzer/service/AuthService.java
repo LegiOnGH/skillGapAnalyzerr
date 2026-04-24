@@ -10,6 +10,7 @@ import com.project.skillGapAnalyzer.mapper.UserMapper;
 import com.project.skillGapAnalyzer.model.User;
 import com.project.skillGapAnalyzer.repository.UserRepository;
 import com.project.skillGapAnalyzer.security.jwt.JWTUtil;
+import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+
+    private final static String TOKEN_TYPE = "Bearer";
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -36,46 +39,50 @@ public class AuthService {
 
     public UserResponseDTO signup(SignupRequestDTO dto) {
 
-        logger.info("Signup attempt for username: {}", dto.getUserName());
+        String username = StringNormalizer.normalize(dto.getUserName());
+        String email = StringNormalizer.normalize(dto.getEmail());
 
-        if (userRepository.findByUserName(dto.getUserName()).isPresent()) {
-            logger.warn("Signup failed - username already exists: {}", dto.getUserName());
+        logger.debug("Signup attempt for username: {}", username);
+
+        if (userRepository.existsByUserNameIgnoreCase(username)) {
             throw new BadRequestException("Username already exists.");
         }
 
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw new BadRequestException("Email already exists.");
+        }
+
         User user = userMapper.toEntity(dto);
+        user.setUserName(username);
+        user.setEmail(email);
         user.setRole(UserRole.ROLE_USER);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         User saved = userRepository.save(user);
 
-        logger.info("User created successfully with id: {}", saved.getId());
+        logger.debug("User created successfully with id: {}", saved.getId());
 
         return userMapper.toDTO(saved);
     }
 
     public LoginResponseDTO login(LoginRequestDTO dto){
 
-        logger.info("Login attempt for username: {}", dto.getUserName());
+        String username = StringNormalizer.normalize(dto.getUserName());
 
-        User user = userRepository.findByUserName(dto.getUserName())
-                .orElseThrow(() -> {
-                    logger.warn("Login failed - user not found: {}", dto.getUserName());
-                    return new BadCredentialsException("Invalid username/password");
-                });
+        logger.debug("Login attempt for username: {}", username);
 
-        boolean isMatch = passwordEncoder.matches(dto.getPassword(), user.getPassword());
+        User user = userRepository.findByUserNameIgnoreCase(username)
+                .orElseThrow(() -> new BadCredentialsException("Invalid username/password"));
 
-        if (!isMatch) {
-            logger.warn("Login failed - invalid password for username: {}", dto.getUserName());
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid username/password");
         }
 
         String role = user.getRole().name();
-        String token = jwtUtil.generateToken(user.getUserName(), role);
+        String token = jwtUtil.generateToken(username, role);
 
-        logger.info("Login successful for username: {}", dto.getUserName());
+        logger.debug("Login successful for username: {}", username);
 
-        return new LoginResponseDTO(token, "Bearer", user.getRole(), user.getId());
+        return new LoginResponseDTO(token, TOKEN_TYPE, user.getRole(), user.getId());
     }
 }

@@ -30,15 +30,15 @@ public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final JWTFilter jwtFilter;
+    private final ObjectMapper mapper;
 
-    public SecurityConfig(JWTFilter jwtFilter) {
+    public SecurityConfig(JWTFilter jwtFilter, ObjectMapper objectMapper) {
         this.jwtFilter = jwtFilter;
+        this.mapper = objectMapper;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        ObjectMapper mapper = new ObjectMapper();
 
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -47,8 +47,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response,
-                                                   authException) -> {
+                        .authenticationEntryPoint((request, response, authException) -> {
                             logger.warn("Unauthorized access: {} {}",
                                     request.getMethod(), request.getRequestURI());
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -58,7 +57,7 @@ public class SecurityConfig {
                                     HttpStatus.UNAUTHORIZED,
                                     Instant.now()
                             );
-                            mapper.writeValue(response.getWriter(), error);
+                            mapper.writeValue(response.getOutputStream(), error);
                         })
                         .accessDeniedHandler((request, response,
                                               accessDeniedException) -> {
@@ -71,7 +70,7 @@ public class SecurityConfig {
                                     HttpStatus.FORBIDDEN,
                                     Instant.now()
                             );
-                            mapper.writeValue(response.getWriter(), error);
+                            mapper.writeValue(response.getOutputStream(), error);
                         })
                 )
                 .authorizeHttpRequests(auth -> auth

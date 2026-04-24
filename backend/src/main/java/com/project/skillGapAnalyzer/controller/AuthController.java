@@ -33,7 +33,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto){
-        logger.debug("Login attempt for user: {}", dto.getUserName());
+        logger.info("Login attempt for user: {}", dto.getUserName());
         LoginResponseDTO response = authService.login(dto);
         logger.info("User login successful: {}", dto.getUserName());
         return ResponseEntity.ok(response);

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 
@@ -36,7 +37,7 @@ public class GitHubService {
 
     public List<RepoDTO> fetchRepositories(String query){
 
-        logger.info("Fetching repositories for query: {}", query);
+        logger.debug("Fetching repositories for query: {}", query);
 
         String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
         String url = githubURL + encodedQuery;
@@ -61,7 +62,7 @@ public class GitHubService {
                     entity,
                     GitHubSearchResponseDTO.class
             );
-        } catch (Exception e) {
+        } catch (RestClientException e) {
             logger.error("Error calling GitHub API for query: {}", query, e);
             throw new ExternalServiceException("Failed to fetch repositories from GitHub");
         }
@@ -75,42 +76,49 @@ public class GitHubService {
 
 
         String remaining = response.getHeaders().getFirst("X-RateLimit-Remaining");
-        logger.info("GitHub rate limit remaining: {}", remaining);
+        logger.debug("GitHub rate limit remaining: {}", remaining);
 
         return body.getItems().stream()
                 .limit(MAX_REPOS)
                 .map(item -> RepoDTO.builder()
                         .name(item.getName())
                         .url(item.getHtmlUrl())
-                        .description(item.getDescription())
+                        .description(
+                                item.getDescription() != null ? item.getDescription() : "No description"
+                        )
+                        .stars(item.getStars())
                         .build())
                 .toList();
     }
 
-    public String buildQuery(String skill, String experienceLevel){
-        return switch (experienceLevel.toLowerCase()) {
-            case "beginner" -> skill + " beginner project";
-            case "intermediate" -> skill + " intermediate project";
-            case "advanced" -> skill + " advanced project";
-            default -> skill + " project";
+    public String buildQuery(String skill, Experience experienceLevel){
+        return switch (experienceLevel) {
+            case BEGINNER -> skill + " beginner project";
+            case INTERMEDIATE -> skill + " intermediate project";
+            case ADVANCED -> skill + " advanced project";
         };
     }
 
     public RepoResponseDTO getReposForSkills(List<String> skills, Experience experienceLevel){
 
-        logger.info("Fetching repositories for {} skills at {} level", skills.size(), experienceLevel);
+        if (skills == null || skills.isEmpty()) {
+            logger.warn("No skills provided for repository fetch");
+            return new RepoResponseDTO(Collections.emptyMap());
+        }
+
+        logger.debug("Fetching repositories for {} skills at {} level", skills.size(), experienceLevel);
 
         Map<String, List<RepoDTO>> result = new HashMap<>();
 
         skills.stream()
                 .limit(3)
                 .forEach(skill -> {
-                    String query = buildQuery(skill, experienceLevel.name().toLowerCase());
+                    String query = buildQuery(skill, experienceLevel);
                     List<RepoDTO> repos = fetchRepositories(query);
                     result.put(skill, repos);
                 });
 
-        logger.info("Repository fetch completed");
+        logger.debug("Repository fetch completed");
 
         return new RepoResponseDTO(result);
     }

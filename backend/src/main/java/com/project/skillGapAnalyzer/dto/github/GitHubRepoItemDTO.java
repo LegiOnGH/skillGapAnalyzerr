@@ -15,4 +15,6 @@ public class GitHubRepoItemDTO {
     @JsonProperty("html_url")
     private String htmlUrl;
     private String description;
+    @JsonProperty("stargazers_count")
+    private int stars;
 }

@@ -1,5 +1,6 @@
 package com.project.skillGapAnalyzer.security.jwt;
 
+import com.project.skillGapAnalyzer.util.StringNormalizer;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -31,8 +32,10 @@ public class JWTUtil {
 
     public String generateToken(String userName, String role) {
 
+        String normalizedUser = StringNormalizer.normalize(userName); // or your StringNormalizer
+
         return Jwts.builder()
-                .subject(userName)
+                .subject(normalizedUser)
                 .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
@@ -66,7 +69,10 @@ public class JWTUtil {
     public boolean validateToken(String token, String userName) {
         try {
             Claims claims = extractAllClaims(token);
-
+            logger.info("Token subject: {}", claims.getSubject());
+            logger.info("UserDetails username: {}", userName);
+            logger.info("Token expiration: {}", claims.getExpiration());
+            logger.info("Now: {}", new Date());
             return claims.getSubject().equals(userName)
                     && claims.getExpiration().after(new Date());
 

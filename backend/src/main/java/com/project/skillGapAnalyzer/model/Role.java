@@ -20,7 +20,7 @@ public class Role {
     @Id
     private String id;
 
-    @Indexed(name = "unique_role_name",unique = true)
+    @Indexed(name = "roleName",unique = true)
     private String roleName;
 
     @Indexed
