@@ -4,6 +4,7 @@ import com.project.skillGapAnalyzer.dto.request.SkillGapRequestDTO;
 import com.project.skillGapAnalyzer.dto.response.AnalysisDetailResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.AnalysisResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.SkillAnalysisResponseDTO;
+import com.project.skillGapAnalyzer.exceptions.BadRequestException;
 import com.project.skillGapAnalyzer.exceptions.ResourceNotFoundException;
 import com.project.skillGapAnalyzer.exceptions.UnauthorizedException;
 import com.project.skillGapAnalyzer.mapper.AnalysisDetailMapper;
@@ -61,6 +62,15 @@ public class AnalysisService {
         analysisRepository.save(analysis);
     }
 
+    public void deleteAnalysis(String id) {
+        Analysis analysis = analysisRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Analysis not found"));
+        String currentUserId = getCurrentUserId(); // from SecurityContext
+        if (!analysis.getUserId().equals(currentUserId))
+            throw new BadRequestException("Not authorized to delete this analysis");
+        analysisRepository.delete(analysis);
+    }
+
     public Page<AnalysisResponseDTO> getUserAnalysis(int page, int size) {
 
         String userId = getCurrentUserId();
@@ -100,4 +110,5 @@ public class AnalysisService {
                 .map(User::getId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
+
 }

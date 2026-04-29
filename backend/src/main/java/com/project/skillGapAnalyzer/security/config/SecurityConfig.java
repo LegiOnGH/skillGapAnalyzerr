@@ -6,6 +6,7 @@ import com.project.skillGapAnalyzer.security.jwt.JWTFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -28,6 +30,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
+    @Value("${cors.allowed.origin:}")
+    private String allowedOrigin;
 
     private final JWTFilter jwtFilter;
     private final ObjectMapper mapper;
@@ -95,7 +100,11 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of("http://localhost:*"));
+        List<String> origins = new ArrayList<>(List.of("http://localhost:*"));
+        if (allowedOrigin != null && !allowedOrigin.isBlank()) {
+            origins.add(allowedOrigin);
+        }
+        config.setAllowedOriginPatterns(origins);
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowCredentials(true);

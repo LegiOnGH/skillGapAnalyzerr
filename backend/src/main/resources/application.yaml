@@ -8,8 +8,6 @@ spring:
     mongodb:
       uri: ${MONGODB_URI}
       auto-index-creation: true
-  main:
-    allow-circular-references: true
 
 jwt:
     secret: ${JWT_SECRET}
@@ -18,3 +16,6 @@ jwt:
 github:
   url: https://api.github.com/search/repositories?q=
   token: ${GITHUB_TOKEN}
+
+cors:
+  allowed.origin: ${CORS_ALLOWED_ORIGIN:}

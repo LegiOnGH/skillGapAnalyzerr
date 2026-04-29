@@ -42,7 +42,6 @@ public class AdminController {
     public ResponseEntity<CategoryResponseDTO> createCategory(@Valid @RequestBody CategoryRequestDTO category) {
         logger.info("Admin creating category: {}", category.getName());
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println(auth.getAuthorities());
         CategoryResponseDTO response = categoryService.createCategory(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

@@ -4,6 +4,8 @@ import com.project.skillGapAnalyzer.dto.response.RoleResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.SkillAnalysisResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.RepoDTO;
 import com.project.skillGapAnalyzer.enums.Experience;
+import com.project.skillGapAnalyzer.model.Role;
+import com.project.skillGapAnalyzer.repository.RoleRepository;
 import com.project.skillGapAnalyzer.repository.SkillResourceRepository;
 import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
@@ -18,13 +20,15 @@ public class SkillService {
     private static final Logger logger = LoggerFactory.getLogger(SkillService.class);
 
     private final RoleService roleService;
+    private final RoleRepository roleRepository;
     private final SkillResourceRepository skillResourceRepository;
     private final GitHubService gitHubService;
 
-    public SkillService(RoleService roleService,
+    public SkillService(RoleService roleService, RoleRepository roleRepository,
                         SkillResourceRepository skillResourceRepository,
                         GitHubService gitHubService) {
         this.roleService = roleService;
+        this.roleRepository = roleRepository;
         this.skillResourceRepository = skillResourceRepository;
         this.gitHubService = gitHubService;
     }
@@ -75,6 +79,22 @@ public class SkillService {
                 resources,
                 repos
         );
+    }
+
+    public Map<String, List<String>> getAllSkillsByCategory() {
+        List<Role> allRoles = roleRepository.findAll();
+        Map<String, Set<String>> grouped = new LinkedHashMap<>();
+
+        for (Role role : allRoles) {
+            String category = StringNormalizer.normalizePreserveCase(role.getCategory());
+            grouped.computeIfAbsent(category, k -> new LinkedHashSet<>())
+                    .addAll(role.getSkills() != null ? role.getSkills() : List.of());
+        }
+
+        // Convert Set → List for JSON serialization
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        grouped.forEach((cat, skills) -> result.put(cat, new ArrayList<>(skills)));
+        return result;
     }
 
     private List<String> getMatchedSkills(List<String> targetSkills, Set<String> userSkills) {

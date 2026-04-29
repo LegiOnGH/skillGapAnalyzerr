@@ -70,8 +70,8 @@ public class GitHubService {
         GitHubSearchResponseDTO body = response.getBody();
 
         if (body == null || body.getItems() == null) {
-            logger.error("Invalid response from GitHub API for query: {}", query);
-            throw new ExternalServiceException("Invalid response from GitHub API");
+            logger.warn("Empty response from GitHub API for query: {}", query);
+            return List.of();
         }
 
 
@@ -113,9 +113,14 @@ public class GitHubService {
         skills.stream()
                 .limit(3)
                 .forEach(skill -> {
-                    String query = buildQuery(skill, experienceLevel);
-                    List<RepoDTO> repos = fetchRepositories(query);
-                    result.put(skill, repos);
+                    try {
+                        String query = buildQuery(skill, experienceLevel);
+                        List<RepoDTO> repos = fetchRepositories(query);
+                        result.put(skill, repos);
+                    } catch (ExternalServiceException e) {
+                        logger.warn("Failed to fetch repos for skill '{}', skipping. Reason: {}", skill, e.getMessage());
+                        result.put(skill, List.of()); // empty list instead of crashing
+                    }
                 });
 
         logger.debug("Repository fetch completed");

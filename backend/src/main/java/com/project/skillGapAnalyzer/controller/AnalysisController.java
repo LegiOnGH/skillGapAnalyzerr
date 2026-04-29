@@ -3,6 +3,7 @@ package com.project.skillGapAnalyzer.controller;
 import com.project.skillGapAnalyzer.dto.request.SkillGapRequestDTO;
 import com.project.skillGapAnalyzer.dto.response.AnalysisDetailResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.AnalysisResponseDTO;
+import com.project.skillGapAnalyzer.dto.response.MessageResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.SkillAnalysisResponseDTO;
 import com.project.skillGapAnalyzer.service.AnalysisService;
 import com.project.skillGapAnalyzer.service.SkillService;
@@ -63,5 +64,11 @@ public class AnalysisController {
         return ResponseEntity.ok(
                 analysisService.getAnalysisById(id)
         );
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MessageResponseDTO> deleteAnalysis(@PathVariable String id) {
+        analysisService.deleteAnalysis(id);
+        return ResponseEntity.ok(new MessageResponseDTO("Analysis deleted"));
     }
 }

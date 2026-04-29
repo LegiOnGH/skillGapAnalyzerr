@@ -16,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Validated
 @RestController
@@ -56,6 +57,11 @@ public class SkillController {
         RoleResponseDTO role = roleService.getRoleByName(roleName);
         logger.info("Fetched role: {}", roleName);
         return ResponseEntity.ok(role);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<Map<String, List<String>>> getAllSkillsByCategory() {
+        return ResponseEntity.ok(skillService.getAllSkillsByCategory());
     }
 
     @PostMapping("/analyze")
