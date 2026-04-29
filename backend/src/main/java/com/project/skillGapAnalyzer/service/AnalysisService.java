@@ -53,8 +53,8 @@ public class AnalysisService {
 
         Analysis analysis = Analysis.builder()
                 .userId(userId)
-                .targetRole(StringNormalizer.normalize(request.getTargetRole()))
-                .userSkills(StringNormalizer.normalizeList(request.getUserSkills()))
+                .targetRole(StringNormalizer.normalizePreserveCase(request.getTargetRole()))
+                .userSkills(StringNormalizer.normalizeListPreserveCase(request.getUserSkills()))
                 .missingSkills(result.getMissingSkills())
                 .progress(result.getProgress())
                 .createdAt(Instant.now())

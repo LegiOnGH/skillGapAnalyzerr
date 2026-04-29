@@ -47,19 +47,17 @@ public class SkillService {
 
         List<String> targetSkills = role.getSkills() == null
                 ? List.of()
-                : role.getSkills().stream()
-                .map(StringNormalizer::normalize)
-                .toList();
+                : role.getSkills();
 
-        Set<String> userSkillSet = userSkills == null
+        Set<String> userSkillSetNormalized = userSkills == null
                 ? Collections.emptySet()
                 : StringNormalizer.normalizeSet(userSkills);
 
         logger.debug("User skills count: {}, Target skills count: {}",
-                userSkillSet.size(), targetSkills.size());
+                userSkillSetNormalized.size(), targetSkills.size());
 
-        List<String> matched = getMatchedSkills(targetSkills, userSkillSet);
-        List<String> missing = getMissingSkills(targetSkills, userSkillSet);
+        List<String> matched = getMatchedSkills(targetSkills, userSkillSetNormalized);
+        List<String> missing = getMissingSkills(targetSkills, userSkillSetNormalized);
 
         int progress = calculateProgress(matched.size(), targetSkills.size());
 
@@ -97,10 +95,10 @@ public class SkillService {
         return result;
     }
 
-    private List<String> getMatchedSkills(List<String> targetSkills, Set<String> userSkills) {
+    private List<String> getMatchedSkills(List<String> targetSkills, Set<String> normalizedUserSkills) {
 
         List<String> matched = targetSkills.stream()
-                .filter(userSkills::contains)
+                .filter(s -> normalizedUserSkills.contains(StringNormalizer.normalize(s)))
                 .toList();
 
         logger.debug("Matched skills count: {}", matched.size());
@@ -108,10 +106,10 @@ public class SkillService {
         return matched;
     }
 
-    private List<String> getMissingSkills(List<String> targetSkills, Set<String> userSkills) {
+    private List<String> getMissingSkills(List<String> targetSkills, Set<String> normalizedUserSkills) {
 
         List<String> missing = targetSkills.stream()
-                .filter(skill -> !userSkills.contains(skill))
+                .filter(s -> !normalizedUserSkills.contains(StringNormalizer.normalize(s)))
                 .toList();
 
         logger.debug("Missing skills count: {}", missing.size());
@@ -134,7 +132,7 @@ public class SkillService {
         logger.debug("Fetching resources for {} missing skills", missing.size());
         Map<String, List<String>> resources = new HashMap<>();
         for (String skill : missing) {
-            skillResourceRepository.findBySkillIgnoreCase(skill)
+            skillResourceRepository.findBySkillIgnoreCase(StringNormalizer.normalize(skill))
                     .ifPresent(resource -> {
                         resources.put(skill, resource.getResources());
                         logger.debug("Resources found for skill: {}", skill);

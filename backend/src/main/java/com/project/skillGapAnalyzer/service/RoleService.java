@@ -36,7 +36,7 @@ public class RoleService {
         logger.debug("Creating role: {}", dto.getRoleName());
 
         String roleName = StringNormalizer.normalizePreserveCase(dto.getRoleName());
-        String category = StringNormalizer.normalize(dto.getCategory());
+        String category = StringNormalizer.normalizePreserveCase(dto.getCategory());
 
         if (roleRepository.findByRoleNameIgnoreCase(roleName).isPresent()) {
             throw new BadRequestException("Role already exists: " + roleName);

@@ -29,7 +29,7 @@ public class CategoryService {
 
     public CategoryResponseDTO createCategory(CategoryRequestDTO dto){
 
-        String name = StringNormalizer.normalize(dto.getName());
+        String name = StringNormalizer.normalizePreserveCase(dto.getName());
 
         logger.debug("Creating category: {}", name);
 
