@@ -2,10 +2,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAnalysisById } from "../features/analysis/hooks";
 import { useDeleteAnalysis } from "../features/analysis/hooks";
 import { formatDateTime } from "../utils/formatDate";
+import { getErrorMessage } from "../utils/errorHandler";
 
 const AnalysisDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [error, setError] = useState("");
   const { data: analysis, isLoading } = useAnalysisById(id);
   const { mutate: deleteAnalysis, isPending: deleting } = useDeleteAnalysis();
 
@@ -13,6 +15,7 @@ const AnalysisDetail = () => {
     if (confirm("Delete this analysis?")) {
       deleteAnalysis(id, {
         onSuccess: () => navigate("/analysis"),
+        onError: (err) => setError(getErrorMessage(err)),
       });
     }
   };
@@ -64,6 +67,12 @@ const AnalysisDetail = () => {
           {deleting ? "Deleting..." : "Delete"}
         </button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-600 text-sm rounded-lg p-3 mb-4">
+            {error}
+        </div>
+      )}
 
       {/* match score */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

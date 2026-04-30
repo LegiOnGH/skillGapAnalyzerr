@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCategories } from "../../features/skills/hooks";
-import { useCreateCategory} from "../../features/admin/hooks";
+import { useCreateCategory } from "../../features/admin/hooks";
+import { getErrorMessage } from "../../utils/errorHandler";
 
 const Categories = () => {
   const [name, setName] = useState("");
@@ -25,7 +26,7 @@ const Categories = () => {
           setTimeout(() => setSuccess(""), 3000);
         },
         onError: (err) => {
-          setError(err.response?.data?.message || "Failed to create category.");
+          setError(getErrorMessage(err));
           setSuccess("");
         },
       }
@@ -39,7 +40,6 @@ const Categories = () => {
         <p className="text-gray-500 mt-1">Manage skill categories.</p>
       </div>
 
-      {/* create form */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
         <h2 className="text-sm font-semibold text-gray-700 mb-3">
           Add New Category
@@ -58,7 +58,7 @@ const Categories = () => {
           <button
             onClick={handleCreate}
             disabled={creating}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors"
+            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors whitespace-nowrap"
           >
             {creating ? "Adding..." : "Add"}
           </button>
@@ -67,7 +67,6 @@ const Categories = () => {
         {success && <p className="text-green-600 text-xs mt-2">{success}</p>}
       </div>
 
-      {/* categories list */}
       <div className="bg-white rounded-xl border border-gray-200">
         {isLoading ? (
           <div className="p-6 space-y-3">

@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useAllResources, useCreateResource, useUpdateResource, useDeleteResource } from "../../features/admin/hooks";
 import { useAllSkills } from "../../features/skills/hooks";
+import { getErrorMessage } from "../../utils/errorHandler";
 
 const Resources = () => {
   const [skill, setSkill] = useState("");
   const [resourceUrl, setResourceUrl] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [editingResource, setEditingResource] = useState(null); // { id, oldUrl }
+  const [editingResource, setEditingResource] = useState(null);
   const [editUrl, setEditUrl] = useState("");
 
   const { data: resources, isLoading } = useAllResources();
@@ -32,7 +33,7 @@ const Resources = () => {
           setTimeout(() => setSuccess(""), 3000);
         },
         onError: (err) => {
-          setError(err.response?.data?.message || "Failed to add resource.");
+          setError(getErrorMessage(err));
           setSuccess("");
         },
       }
@@ -56,9 +57,7 @@ const Resources = () => {
           setSuccess("Resource updated.");
           setTimeout(() => setSuccess(""), 3000);
         },
-        onError: (err) => {
-          setError(err.response?.data?.message || "Failed to update resource.");
-        },
+        onError: (err) => setError(getErrorMessage(err)),
       }
     );
   };
@@ -68,9 +67,7 @@ const Resources = () => {
       deleteResource(
         { id, resource: url },
         {
-          onError: (err) => {
-            setError(err.response?.data?.message || "Failed to delete resource.");
-          },
+          onError: (err) => setError(getErrorMessage(err)),
         }
       );
     }
@@ -95,18 +92,16 @@ const Resources = () => {
             value={skill}
             onChange={(e) => { setSkill(e.target.value); setError(""); }}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-            <option value="">  Select Skill  </option>
+          >
+            <option value="">-- Select Skill --</option>
             {skillsByCategory &&
-                Object.entries(skillsByCategory).map(([category, skills]) => (
+              Object.entries(skillsByCategory).map(([category, skills]) => (
                 <optgroup key={category} label={category}>
-                    {skills.map((s) => (
-                    <option key={s} value={s}>
-                        {s}
-                    </option>
-                    ))}
+                  {skills.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
                 </optgroup>
-                ))}
+              ))}
           </select>
           <input
             type="url"
@@ -132,7 +127,10 @@ const Resources = () => {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 bg-white rounded-xl border border-gray-200 animate-pulse" />
+              <div
+                key={i}
+                className="h-24 bg-white rounded-xl border border-gray-200 animate-pulse"
+              />
             ))}
           </div>
         ) : resources?.length === 0 ? (
@@ -163,7 +161,7 @@ const Resources = () => {
                         <button
                           onClick={() => handleUpdate(resource.id)}
                           disabled={updating}
-                          className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
+                          className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap"
                         >
                           {updating ? "Saving..." : "Save"}
                         </button>
@@ -176,8 +174,8 @@ const Resources = () => {
                       </div>
                     ) : (
                       <>
-                        <a
-                          href={url}
+                        
+                        <a  href={url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 text-xs text-indigo-600 hover:underline truncate"
@@ -189,13 +187,13 @@ const Resources = () => {
                             setEditingResource({ id: resource.id, oldUrl: url });
                             setEditUrl(url);
                           }}
-                          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                          className="text-xs text-gray-400 hover:text-gray-600 transition-colors whitespace-nowrap"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(resource.id, url)}
-                          className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                          className="text-xs text-red-400 hover:text-red-600 transition-colors whitespace-nowrap"
                         >
                           Delete
                         </button>

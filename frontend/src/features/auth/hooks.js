@@ -2,26 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { login, signup } from "./api";
 import useAuthStore from "../../store/authStore";
 import { useNavigate } from "react-router-dom";
-
-// returns { userName: "...", email: "...", password: "..." }
-const parseFieldErrors = (error) => {
-  const msg = error.response?.data?.message || "";
-  const fieldErrors = {};
-
-  if (msg.startsWith("Validation failed:")) {
-    const inner = msg.replace("Validation failed:", "").trim();
-    const cleaned = inner.replace(/[{}]/g, "");
-    cleaned.split(",").forEach((part) => {
-      const [key, ...rest] = part.split("=");
-      if (key && rest.length) {
-        fieldErrors[key.trim()] = rest.join("=").trim();
-      }
-    });
-    return { fieldErrors, generalError: "" };
-  }
-
-  return { fieldErrors: {}, generalError: msg || "Something went wrong." };
-};
+import { getErrorMessage } from "../../utils/errorHandler";
 
 export const useLogin = (setErrors) => {
   const { login: storeLogin } = useAuthStore();
@@ -35,7 +16,6 @@ export const useLogin = (setErrors) => {
       navigate("/dashboard");
     },
     onError: (error) => {
-      // always generic for login — never reveal which field is wrong
       const msg = error.response?.data?.message || "Login failed. Please try again.";
       setErrors({ fields: {}, general: msg });
     },
@@ -51,8 +31,27 @@ export const useSignup = (setErrors) => {
       navigate("/login");
     },
     onError: (error) => {
-      const { fieldErrors, generalError } = parseFieldErrors(error);
-      setErrors({ fields: fieldErrors, general: generalError });
+      const { message, fieldErrors } = parseSignupError(error);
+      setErrors({ fields: fieldErrors, general: message });
     },
   });
+};
+
+const parseSignupError = (error) => {
+  const msg = error?.response?.data?.message || "";
+  const fieldErrors = {};
+
+  if (msg.startsWith("Validation failed:")) {
+    const inner = msg.replace("Validation failed:", "").trim();
+    const cleaned = inner.replace(/[{}]/g, "");
+    cleaned.split(",").forEach((part) => {
+      const [key, ...rest] = part.split("=");
+      if (key && rest.length) {
+        fieldErrors[key.trim()] = rest.join("=").trim();
+      }
+    });
+    return { fieldErrors, message: "" };
+  }
+
+  return { fieldErrors: {}, message: getErrorMessage(error) };
 };

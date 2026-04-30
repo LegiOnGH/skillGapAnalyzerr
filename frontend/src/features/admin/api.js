@@ -6,7 +6,7 @@ export const createCategory = (data) => api.post("/admin/categories", data);
 // roles
 export const createRole = (data) => api.post("/admin/roles", data);
 export const deleteRole = (id) => api.delete(`/admin/roles/${id}`);
-export const updateRole = (id, data) => api.put(`/admin/roles/${id}`, data);
+export const updateRole = (id, data) => api.patch(`/admin/roles/${id}`, data);
 
 // resources
 export const createResource = (data) => api.post("/admin/resources", data);

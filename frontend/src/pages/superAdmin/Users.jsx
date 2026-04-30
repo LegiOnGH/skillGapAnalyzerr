@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAllUsers, useUpdateUserRole, useDeleteUser } from "../../features/superAdmin/hooks";
 import useAuthStore from "../../store/authStore";
 import { unwrapPage } from "../../utils/pagination";
+import { getErrorMessage } from "../../utils/errorHandler";
 
 const ROLE_OPTIONS = [
   { value: "USER", label: "User" },
@@ -44,7 +45,7 @@ const Users = () => {
       { userId, role: newRole },
       {
         onError: (err) => {
-          setError(err.response?.data?.message || "Failed to update role.");
+          setError(getErrorMessage(err));
           setTimeout(() => setError(""), 3000);
         },
       }
@@ -55,7 +56,7 @@ const Users = () => {
     if (confirm(`Delete user "${userName}"? This cannot be undone.`)) {
       deleteUser(userId, {
         onError: (err) => {
-          setError(err.response?.data?.message || "Failed to delete user.");
+          setError(getErrorMessage(err));
           setTimeout(() => setError(""), 3000);
         },
       });
@@ -87,69 +88,71 @@ const Users = () => {
             No users found.
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Username
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-gray-800">
-                    {user.userName}
-                    {user.id === currentUserId && (
-                      <span className="ml-2 text-xs text-indigo-500">(you)</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">{user.email}</td>
-                  <td className="px-6 py-4">
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${getRoleBadge(user.role)}`}>
-                      {getRoleLabel(user.role)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {user.id === currentUserId ? (
-                      <span className="text-gray-300 text-xs">—</span>
-                    ) : (
-                      <div className="flex items-center gap-3">
-                        <select
-                          value={user.role}
-                          onChange={(e) => {
-                            console.log("selected: ", e.target.value);
-                            handleRoleChange(user.id, e.target.value)}}
-                          className="border border-gray-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        >
-                          {ROLE_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          onClick={() => handleDelete(user.id, user.userName)}
-                          className="text-red-400 hover:text-red-600 text-xs transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Username
+                  </th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-800 whitespace-nowrap">
+                      {user.userName}
+                      {user.id === currentUserId && (
+                        <span className="ml-2 text-xs text-indigo-500">(you)</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
+                      {user.email}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${getRoleBadge(user.role)}`}>
+                        {getRoleLabel(user.role)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {user.id === currentUserId ? (
+                        <span className="text-gray-300 text-xs">—</span>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <select
+                            value={user.role}
+                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                            className="border border-gray-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          >
+                            {ROLE_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => handleDelete(user.id, user.userName)}
+                            className="text-red-400 hover:text-red-600 text-xs transition-colors whitespace-nowrap"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

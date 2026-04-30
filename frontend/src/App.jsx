@@ -16,10 +16,6 @@ import Roles from "./pages/admin/Roles";
 import Resources from "./pages/admin/Resources";
 import Users from "./pages/superAdmin/Users";
 
-const Page = ({ name }) => (
-  <div className="p-8 text-xl font-semibold text-gray-700">{name}</div>
-);
-
 function App() {
   return (
     <Routes>

@@ -1,11 +1,9 @@
 import { Link } from "react-router-dom";
-import useAuthStore from "../store/authStore";
 import { useAnalysisHistory } from "../features/analysis/hooks";
 import { formatDate } from "../utils/formatDate";
 
 const Dashboard = () => {
-  const { userId } = useAuthStore();
-  const { data, isLoading } = useAnalysisHistory(0, 3);
+  const { data, isLoading, error} = useAnalysisHistory(0, 3);
 
   const analyses = data?.content ?? [];
   const totalAnalyses = data?.totalElements ?? 0;
@@ -62,6 +60,12 @@ const Dashboard = () => {
         </Link>
       </div>
 
+      {error && (
+        <div className="bg-red-50 text-red-600 text-sm rounded-lg p-3 mb-4">
+          Failed to load recent analyses.
+        </div>
+      )}
+
       {/* recent analyses */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -92,7 +96,7 @@ const Dashboard = () => {
             <p className="text-gray-400 text-sm mb-4">No analyses yet.</p>
             <Link
               to="/skills/analyze"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors whitespace-nowrap"
             >
               Run your first analysis
             </Link>

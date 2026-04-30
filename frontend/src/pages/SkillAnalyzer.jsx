@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCategories, useRoles } from "../features/skills/hooks";
 import { useAnalyzeAndSave } from "../features/analysis/hooks";
+import { getErrorMessage } from "../utils/errorHandler";
 
 const EXPERIENCE_LEVELS = ["BEGINNER", "INTERMEDIATE", "ADVANCED"];
 
@@ -11,12 +12,12 @@ const SkillAnalyzer = () => {
   const [experienceLevel, setExperienceLevel] = useState("BEGINNER");
   const [includeRepos, setIncludeRepos] = useState(false);
   const [result, setResult] = useState(null);
+  const [analyzeError, setAnalyzeError] = useState("");
 
-  const { data: categories, isLoading: loadingCategories } = useCategories();
+  const { data: categories, isLoading: loadingCategories, error: categoriesError } = useCategories();
   const { data: roles, isLoading: loadingRoles } = useRoles(selectedCategory);
   const { mutate: analyze, isPending } = useAnalyzeAndSave();
 
-  // get skills for selected role
   const roleSkills =
     roles?.find((r) => r.roleName === selectedRole)?.skills ?? [];
 
@@ -25,12 +26,14 @@ const SkillAnalyzer = () => {
     setSelectedRole("");
     setSelectedSkills([]);
     setResult(null);
+    setAnalyzeError("");
   };
 
   const handleRoleChange = (e) => {
     setSelectedRole(e.target.value);
     setSelectedSkills([]);
     setResult(null);
+    setAnalyzeError("");
   };
 
   const toggleSkill = (skill) => {
@@ -43,6 +46,7 @@ const SkillAnalyzer = () => {
 
   const handleSubmit = () => {
     if (!selectedRole || isPending) return;
+    setAnalyzeError("");
 
     analyze(
       {
@@ -53,14 +57,23 @@ const SkillAnalyzer = () => {
       },
       {
         onSuccess: (res) => setResult(res.data),
-        onError: () => alert("Analysis failed. Please try again."),
+        onError: (err) => setAnalyzeError(getErrorMessage(err)),
       }
     );
   };
 
+  if (categoriesError) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-red-50 text-red-600 text-sm rounded-lg p-4">
+          Failed to load categories. Please refresh the page.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
-      {/* header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Skill Analyzer</h1>
         <p className="text-gray-500 mt-1">
@@ -68,7 +81,6 @@ const SkillAnalyzer = () => {
         </p>
       </div>
 
-      {/* form card */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
 
         {/* step 1 - category */}
@@ -81,7 +93,7 @@ const SkillAnalyzer = () => {
             onChange={handleCategoryChange}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">  Choose a category  </option>
+            <option value="">-- Choose a category --</option>
             {loadingCategories ? (
               <option disabled>Loading...</option>
             ) : (
@@ -105,7 +117,7 @@ const SkillAnalyzer = () => {
             disabled={!selectedCategory}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
           >
-            <option value="">  Choose a role  </option>
+            <option value="">-- Choose a role --</option>
             {loadingRoles ? (
               <option disabled>Loading...</option>
             ) : (
@@ -119,7 +131,7 @@ const SkillAnalyzer = () => {
         </div>
 
         {/* step 3 - skills */}
-        {selectedRole && roleSkills.length > 0 && (
+        {selectedRole && (
           <div className="mb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               3. Select Your Skills{" "}
@@ -127,22 +139,26 @@ const SkillAnalyzer = () => {
                 ({selectedSkills.length} selected)
               </span>
             </label>
-            <div className="flex flex-wrap gap-2">
-              {roleSkills.map((skill) => (
-                <button
-                  key={skill}
-                  type="button"
-                  onClick={() => toggleSkill(skill)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                    selectedSkills.includes(skill)
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400"
-                  }`}
-                >
-                  {skill}
-                </button>
-              ))}
-            </div>
+            {roleSkills.length === 0 ? (
+              <p className="text-gray-400 text-sm">No skills found for this role.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {roleSkills.map((skill) => (
+                  <button
+                    key={skill}
+                    type="button"
+                    onClick={() => toggleSkill(skill)}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                      selectedSkills.includes(skill)
+                        ? "bg-indigo-600 text-white border-indigo-600"
+                        : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400"
+                    }`}
+                  >
+                    {skill}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -151,7 +167,7 @@ const SkillAnalyzer = () => {
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             4. Experience Level
           </label>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             {EXPERIENCE_LEVELS.map((level) => (
               <button
                 key={level}
@@ -174,7 +190,7 @@ const SkillAnalyzer = () => {
           <button
             type="button"
             onClick={() => setIncludeRepos((prev) => !prev)}
-            className={`w-11 h-6 rounded-full transition-colors relative ${
+            className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${
               includeRepos ? "bg-indigo-600" : "bg-gray-300"
             }`}
           >
@@ -189,7 +205,10 @@ const SkillAnalyzer = () => {
           </label>
         </div>
 
-        {/* analyze button */}
+        {analyzeError && (
+          <p className="text-red-500 text-sm mb-4">{analyzeError}</p>
+        )}
+
         <button
           onClick={handleSubmit}
           disabled={!selectedRole || isPending}
@@ -202,8 +221,6 @@ const SkillAnalyzer = () => {
       {/* results */}
       {result && (
         <div className="space-y-6">
-
-          {/* progress */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
               Your Match Score
@@ -221,9 +238,7 @@ const SkillAnalyzer = () => {
             </div>
           </div>
 
-          {/* matched + missing skills */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* matched */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="font-semibold text-gray-800 mb-3">
                 ✅ Matched Skills ({result.matchedSkills?.length ?? 0})
@@ -244,15 +259,12 @@ const SkillAnalyzer = () => {
               )}
             </div>
 
-            {/* missing */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="font-semibold text-gray-800 mb-3">
                 ❌ Missing Skills ({result.missingSkills?.length ?? 0})
               </h3>
               {result.missingSkills?.length === 0 ? (
-                <p className="text-gray-400 text-sm">
-                  You have all the skills!
-                </p>
+                <p className="text-gray-400 text-sm">You have all the skills!</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {result.missingSkills?.map((skill) => (
@@ -268,7 +280,6 @@ const SkillAnalyzer = () => {
             </div>
           </div>
 
-          {/* resources */}
           {result.resourcesBySkill &&
             Object.keys(result.resourcesBySkill).length > 0 && (
               <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -279,18 +290,18 @@ const SkillAnalyzer = () => {
                   {Object.entries(result.resourcesBySkill).map(
                     ([skill, resources]) => (
                       <div key={skill}>
-                        <p className="text-sm font-semibold text-gray-700 mb-2 capitalize">
+                        <p className="text-sm font-semibold text-gray-700 mb-2">
                           {skill}
                         </p>
                         <ul className="space-y-1">
                           {resources.map((url) => (
                             <li key={url}>
-                                <a
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-indigo-600 hover:underline text-sm truncate block"
-                                >
+                              
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 hover:underline text-sm truncate block"
+                              >
                                 {url}
                               </a>
                             </li>
@@ -303,7 +314,6 @@ const SkillAnalyzer = () => {
               </div>
             )}
 
-          {/* repos */}
           {result.reposBySkill &&
             Object.keys(result.reposBySkill).length > 0 && (
               <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -311,44 +321,42 @@ const SkillAnalyzer = () => {
                   ⌥ GitHub Repos
                 </h3>
                 <div className="space-y-4">
-                  {Object.entries(result.reposBySkill).map(
-                    ([skill, repos]) => (
-                      <div key={skill}>
-                        <p className="text-sm font-semibold text-gray-700 mb-2">
-                          {skill}
+                  {Object.entries(result.reposBySkill).map(([skill, repos]) => (
+                    <div key={skill}>
+                      <p className="text-sm font-semibold text-gray-700 mb-2">
+                        {skill}
+                      </p>
+                      {repos.length === 0 ? (
+                        <p className="text-gray-400 text-xs">
+                          No repositories found for this skill.
                         </p>
-                        {repos.length === 0 ? (
-                          <p className="text-gray-400 text-xs">
-                            No repositories found for this skill.
-                          </p>
-                        ) : (
-                          <div className="space-y-2">
-                            {repos.map((repo) => (
-                              <a
-                                key={repo.url}
-                                href={repo.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block border border-gray-200 rounded-lg p-3 hover:border-indigo-300 transition-colors"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <p className="text-sm font-medium text-gray-800">
-                                    {repo.name}
-                                  </p>
-                                  <span className="text-xs text-gray-400">
-                                    ★ {repo.stars}
-                                  </span>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1 truncate">
-                                  {repo.description}
+                      ) : (
+                        <div className="space-y-2">
+                          {repos.map((repo) => (
+                            <a
+                              key={repo.url}
+                              href={repo.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block border border-gray-200 rounded-lg p-3 hover:border-indigo-300 transition-colors"
+                            >
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium text-gray-800">
+                                  {repo.name}
                                 </p>
-                              </a>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  )}
+                                <span className="text-xs text-gray-400 shrink-0 ml-2">
+                                  ★ {repo.stars}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1 truncate">
+                                {repo.description}
+                              </p>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

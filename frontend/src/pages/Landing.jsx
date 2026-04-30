@@ -132,7 +132,7 @@ const Landing = () => {
           </p>
           <Link
             to="/signup"
-            className="bg-white text-indigo-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+            className="bg-white text-indigo-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors whitespace-nowrap"
           >
             Get started for free
           </Link>
