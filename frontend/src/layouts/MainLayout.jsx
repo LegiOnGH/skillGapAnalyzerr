@@ -25,8 +25,8 @@ const SidebarContent = ({ role, isActive, setSidebarOpen, handleLogout }) => {
     <>
       {/* brand */}
       <div className="px-6 py-6 border-b border-gray-700">
-        <h1 className="text-xl font-bold text-white">SkillGap</h1>
-        <p className="text-gray-400 text-xs mt-1">Analyze. Learn. Grow.</p>
+        <h1 className="text-xl font-bold text-white">SkillBridge</h1>
+        <p className="text-gray-400 text-xs mt-1">Gap Analysis and Repo Discovery</p>
       </div>
 
       {/* nav */}
@@ -167,7 +167,7 @@ const MainLayout = ({ children }) => {
           >
             ☰
           </button>
-          <span className="text-gray-800 font-bold">SkillGap</span>
+          <span className="text-gray-800 font-bold">SkillBridge</span>
           <div className="w-6" />
         </div>
 
