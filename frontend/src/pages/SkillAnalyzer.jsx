@@ -296,7 +296,7 @@ const SkillAnalyzer = () => {
                         <ul className="space-y-1">
                           {resources.map((url) => (
                             <li key={url}>
-                              
+                              <a
                                 href={url}
                                 target="_blank"
                                 rel="noopener noreferrer"

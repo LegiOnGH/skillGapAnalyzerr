@@ -3,37 +3,25 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { ROLES } from "../constants/roles";
 
-const navLinks = [
-  { path: "/dashboard", label: "Dashboard", icon: "⊞" },
-  { path: "/skills/analyze", label: "Skill Analyzer", icon: "◎" },
-  { path: "/analysis", label: "History", icon: "☰" },
-  { path: "/repos", label: "Repo Finder", icon: "⌥" },
-];
+const SidebarContent = ({ role, isActive, setSidebarOpen, handleLogout }) => {
+  const navLinks = [
+    { path: "/dashboard", label: "Dashboard", icon: "⊞" },
+    { path: "/skills/analyze", label: "Skill Analyzer", icon: "◎" },
+    { path: "/analysis", label: "History", icon: "☰" },
+    { path: "/repos", label: "Repo Finder", icon: "⌥" },
+  ];
 
-const adminLinks = [
-  { path: "/admin/categories", label: "Categories", icon: "❏" },
-  { path: "/admin/roles", label: "Roles", icon: "◈" },
-  { path: "/admin/resources", label: "Resources", icon: "◉" },
-];
+  const adminLinks = [
+    { path: "/admin/categories", label: "Categories", icon: "❏" },
+    { path: "/admin/roles", label: "Roles", icon: "◈" },
+    { path: "/admin/resources", label: "Resources", icon: "◉" },
+  ];
 
-const superAdminLinks = [
-  { path: "/super-admin/users", label: "Users", icon: "◎" },
-];
+  const superAdminLinks = [
+    { path: "/super-admin/users", label: "Users", icon: "◎" },
+  ];
 
-const MainLayout = ({ children }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { role, logout } = useAuthStore();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  const isActive = (path) => location.pathname === path;
-
-  const SidebarContent = () => (
+  return (
     <>
       {/* brand */}
       <div className="px-6 py-6 border-b border-gray-700">
@@ -118,13 +106,32 @@ const MainLayout = ({ children }) => {
       </div>
     </>
   );
+};
+
+const MainLayout = ({ children }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { role, logout } = useAuthStore();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const isActive = (path) => location.pathname === path;
 
   return (
     <div className="flex min-h-screen">
 
       {/* desktop sidebar */}
       <aside className="hidden md:flex w-64 bg-gray-900 flex-col fixed h-full z-30">
-        <SidebarContent />
+        <SidebarContent
+          role={role}
+          isActive={isActive}
+          setSidebarOpen={setSidebarOpen}
+          handleLogout={handleLogout}
+        />
       </aside>
 
       {/* mobile overlay */}
@@ -136,10 +143,17 @@ const MainLayout = ({ children }) => {
       )}
 
       {/* mobile sidebar */}
-      <aside className={`fixed top-0 left-0 h-full w-64 bg-gray-900 flex flex-col z-30 transform transition-transform duration-300 md:hidden ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
-        <SidebarContent />
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 flex flex-col z-30 transform transition-transform duration-300 md:hidden ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <SidebarContent
+          role={role}
+          isActive={isActive}
+          setSidebarOpen={setSidebarOpen}
+          handleLogout={handleLogout}
+        />
       </aside>
 
       {/* main content */}
@@ -154,7 +168,7 @@ const MainLayout = ({ children }) => {
             ☰
           </button>
           <span className="text-gray-800 font-bold">SkillGap</span>
-          <div className="w-6" /> {/* spacer */}
+          <div className="w-6" />
         </div>
 
         <div className="p-4 md:p-8">

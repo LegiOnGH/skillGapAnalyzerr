@@ -107,7 +107,7 @@ const Dashboard = () => {
               <Link
                 key={analysis.id}
                 to={`/analysis/${analysis.id}`}
-                className="bg-white rounded-xl border border-gray-200 p-5 flex items-center justify-between hover:border-indigo-300 transition-colors block"
+                className="bg-white rounded-xl border border-gray-200 p-5 flex items-center justify-between hover:border-indigo-300 transition-colors"
               >
                 <div>
                   <p className="font-semibold text-gray-800">
