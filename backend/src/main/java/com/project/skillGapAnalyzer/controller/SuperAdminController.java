@@ -1,9 +1,11 @@
 package com.project.skillGapAnalyzer.controller;
 
+import com.project.skillGapAnalyzer.dto.request.UserRoleUpdateRequestDTO;
 import com.project.skillGapAnalyzer.dto.response.MessageResponseDTO;
 import com.project.skillGapAnalyzer.dto.response.UserResponseDTO;
 import com.project.skillGapAnalyzer.enums.UserRole;
 import com.project.skillGapAnalyzer.service.UserService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -48,12 +50,13 @@ public class SuperAdminController {
         return ResponseEntity.ok(userService.getUserById(userId));
     }
 
-    @PutMapping("/users/{userId}/promote")
-    public ResponseEntity<MessageResponseDTO> promoteUser(@PathVariable @NotBlank String userId) {
-        logger.info("Super admin promoting user to ADMIN: {}", userId);
-        userService.promoteUser(userId);
-        return ResponseEntity.ok(
-                new MessageResponseDTO("User promoted to ADMIN"));
+    @PatchMapping("/users/{userId}/role")
+    public ResponseEntity<MessageResponseDTO> updateUserRole(
+            @PathVariable @NotBlank String userId,
+            @Valid @RequestBody UserRoleUpdateRequestDTO dto) {
+        logger.info("Super admin updating role for user: {} to {}", userId, dto.getRole());
+        userService.updateUserRole(userId, dto.getRole());
+        return ResponseEntity.ok(new MessageResponseDTO("User role updated successfully"));
     }
 
     @DeleteMapping("/users/{userId}")

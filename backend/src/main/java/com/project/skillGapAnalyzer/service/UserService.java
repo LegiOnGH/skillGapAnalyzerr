@@ -33,30 +33,29 @@ public class UserService {
     }
 
     @Transactional
-    public void promoteUser(String userId){
-
-        logger.debug("Promote request received for userId: {}", userId);
-
+    public void updateUserRole(String userId, UserRole newRole) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    logger.warn("User not found for promotion: {}", userId);
-                    return new ResourceNotFoundException("User not found with id: " + userId);
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        String currentUsername = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        User currentUser = userRepository.findByUserNameIgnoreCase(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
+
+        if (user.getId().equals(currentUser.getId())) {
+            throw new BadRequestException("You cannot change your own role");
+        }
 
         if (user.getRole() == UserRole.ROLE_SUPER_ADMIN) {
-            logger.warn("Attempt to modify SUPER_ADMIN: {}", userId);
-            throw new BadRequestException("Cannot modify SUPER_ADMIN role");
+            long superAdminCount = userRepository.countByRole(UserRole.ROLE_SUPER_ADMIN);
+            if (superAdminCount <= 1) {
+                throw new BadRequestException("Cannot demote the last Super Admin");
+            }
         }
 
-        if (user.getRole() == UserRole.ROLE_ADMIN) {
-            logger.warn("User already ADMIN: {}", userId);
-            throw new BadRequestException("User is already an ADMIN");
-        }
-
-        user.setRole(UserRole.ROLE_ADMIN);
+        user.setRole(newRole);
         userRepository.save(user);
-
-        logger.info("User promoted successfully: {}", userId);
+        logger.info("User {} role updated to {}", userId, newRole);
     }
 
     @Transactional
