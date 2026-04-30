@@ -9,6 +9,8 @@ import com.project.skillGapAnalyzer.repository.CategoryRepository;
 import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,7 @@ public class CategoryService {
         this.categoryMapper = categoryMapper;
     }
 
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponseDTO createCategory(CategoryRequestDTO dto){
 
         String name = StringNormalizer.normalizePreserveCase(dto.getName());
@@ -48,6 +51,7 @@ public class CategoryService {
         return categoryMapper.toDTO(saved);
     }
 
+    @Cacheable("categories")
     public List<CategoryResponseDTO> getAllCategories(){
 
         logger.debug("Fetching all categories");

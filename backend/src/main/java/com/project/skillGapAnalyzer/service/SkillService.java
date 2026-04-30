@@ -10,6 +10,7 @@ import com.project.skillGapAnalyzer.repository.SkillResourceRepository;
 import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -79,6 +80,7 @@ public class SkillService {
         );
     }
 
+    @Cacheable("allSkills")
     public Map<String, List<String>> getAllSkillsByCategory() {
         List<Role> allRoles = roleRepository.findAll();
         Map<String, Set<String>> grouped = new LinkedHashMap<>();

@@ -9,7 +9,7 @@ import com.project.skillGapAnalyzer.exceptions.BadRequestException;
 import com.project.skillGapAnalyzer.mapper.UserMapper;
 import com.project.skillGapAnalyzer.model.User;
 import com.project.skillGapAnalyzer.repository.UserRepository;
-import com.project.skillGapAnalyzer.security.jwt.JWTUtil;
+import com.project.skillGapAnalyzer.security.utils.JWTUtil;
 import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package com.project.skillGapAnalyzer.security.jwt;
+package com.project.skillGapAnalyzer.security.utils;
 
 import com.project.skillGapAnalyzer.util.StringNormalizer;
 import io.jsonwebtoken.Claims;

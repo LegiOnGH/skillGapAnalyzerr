@@ -8,6 +8,10 @@ spring:
     mongodb:
       uri: ${MONGODB_URI}
       auto-index-creation: true
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=10m
 
 jwt:
     secret: ${JWT_SECRET}

@@ -12,6 +12,8 @@ import com.project.skillGapAnalyzer.repository.RoleRepository;
 import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,6 +33,7 @@ public class RoleService {
         this.roleMapper = roleMapper;
     }
 
+    @CacheEvict(value = {"roles", "allSkills"}, allEntries = true)
     public RoleResponseDTO createRole(RoleRequestDTO dto) {
 
         logger.debug("Creating role: {}", dto.getRoleName());
@@ -64,7 +67,7 @@ public class RoleService {
 
         return roleMapper.toDTO(saved);
     }
-
+    @CacheEvict(value = {"roles", "allSkills"}, allEntries = true)
     public RoleResponseDTO updateRole(String id, RoleUpdateDTO dto) {
 
         logger.debug("Updating role: {}", id);
@@ -82,7 +85,7 @@ public class RoleService {
             existing.setRoleName(newName);
         }
 
-        String category = StringNormalizer.normalize(dto.getCategory());
+        String category = StringNormalizer.normalizePreserveCase(dto.getCategory());
         if(category != null && !category.isEmpty()){
             if (!categoryRepository.existsByNameIgnoreCase(category)) {
                 throw new BadRequestException("Invalid category: " + category);
@@ -105,6 +108,7 @@ public class RoleService {
         return roleMapper.toDTO(updated);
     }
 
+    @CacheEvict(value = {"roles", "allSkills"}, allEntries = true)
     public void deleteRole(String id) {
 
         logger.debug("Deleting role: {}", id);
@@ -117,6 +121,7 @@ public class RoleService {
         logger.info("Role deleted successfully: {}", id);
     }
 
+    @Cacheable(value = "roles", key = "category")
     public List<RoleResponseDTO> getRoles(String category){
 
         logger.debug("Fetching roles for category: {}", category);

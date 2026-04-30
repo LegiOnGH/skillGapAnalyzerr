@@ -1,5 +1,6 @@
-package com.project.skillGapAnalyzer.security.jwt;
+package com.project.skillGapAnalyzer.security.filters;
 
+import com.project.skillGapAnalyzer.security.utils.JWTUtil;
 import com.project.skillGapAnalyzer.service.UserDetailsServiceImpl;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;

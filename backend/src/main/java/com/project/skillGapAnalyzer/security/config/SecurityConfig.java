@@ -2,7 +2,8 @@ package com.project.skillGapAnalyzer.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.skillGapAnalyzer.dto.response.ErrorResponseDTO;
-import com.project.skillGapAnalyzer.security.jwt.JWTFilter;
+import com.project.skillGapAnalyzer.security.filters.RateLimitFilter;
+import com.project.skillGapAnalyzer.security.filters.JWTFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,10 +36,12 @@ public class SecurityConfig {
     private String allowedOrigin;
 
     private final JWTFilter jwtFilter;
+    private final RateLimitFilter rateLimitFilter;
     private final ObjectMapper mapper;
 
-    public SecurityConfig(JWTFilter jwtFilter, ObjectMapper objectMapper) {
+    public SecurityConfig(JWTFilter jwtFilter, RateLimitFilter rateLimitFilter, ObjectMapper objectMapper) {
         this.jwtFilter = jwtFilter;
+        this.rateLimitFilter = rateLimitFilter;
         this.mapper = objectMapper;
     }
 
@@ -86,6 +89,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
