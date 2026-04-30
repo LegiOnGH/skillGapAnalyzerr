@@ -121,7 +121,7 @@ public class RoleService {
         logger.info("Role deleted successfully: {}", id);
     }
 
-    @Cacheable(value = "roles", key = "category")
+    @Cacheable(value = "roles", key = "#category")
     public List<RoleResponseDTO> getRoles(String category){
 
         logger.debug("Fetching roles for category: {}", category);
