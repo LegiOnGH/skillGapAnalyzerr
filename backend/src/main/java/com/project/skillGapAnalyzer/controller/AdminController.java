@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
 public class AdminController {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
