@@ -46,7 +46,7 @@ public class RoleService {
             throw new BadRequestException("Invalid category: " + category);
         }
 
-        List<String> normalizedSkills = StringNormalizer.normalizeList(dto.getSkills());
+        List<String> normalizedSkills = StringNormalizer.normalizeListPreserveCase(dto.getSkills());
 
         if (normalizedSkills.isEmpty()) {
             throw new BadRequestException("Role must have at least one valid skill");
@@ -91,7 +91,7 @@ public class RoleService {
         }
 
         if (dto.getSkills() != null) {
-            List<String> normalizedSkills = StringNormalizer.normalizeList(dto.getSkills());
+            List<String> normalizedSkills = StringNormalizer.normalizeListPreserveCase(dto.getSkills());
             if (normalizedSkills.isEmpty()) {
                 throw new BadRequestException("Skills cannot be empty");
             }
