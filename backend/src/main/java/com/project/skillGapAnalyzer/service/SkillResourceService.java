@@ -11,6 +11,7 @@ import com.project.skillGapAnalyzer.repository.SkillResourceRepository;
 import com.project.skillGapAnalyzer.util.StringNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -80,6 +81,13 @@ public class SkillResourceService {
 
             return skillResourceMapper.toDTO(saved);
         }
+    }
+
+    public List<SkillResourceResponseDTO> getAllResources() {
+        return repository.findAll(Sort.by("skill"))
+                .stream()
+                .map(skillResourceMapper::toDTO)
+                .toList();
     }
 
     public SkillResourceResponseDTO updateResource(String id, SkillResourceUpdateDTO dto) {

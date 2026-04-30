@@ -18,6 +18,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/admin")
 @PreAuthorize("hasRole('ADMIN')")
@@ -73,7 +75,12 @@ public class AdminController {
                 new MessageResponseDTO("Role deleted successfully"));
     }
 
-    // 🔹 Add Skill Resource
+    @GetMapping("/resources")
+    public ResponseEntity<List<SkillResourceResponseDTO>> getAllResources() {
+        logger.debug("Admin fetching all resources");
+        return ResponseEntity.ok(skillResourceService.getAllResources());
+    }
+
     @PostMapping("/resources")
     public ResponseEntity<SkillResourceResponseDTO> addResource(@Valid @RequestBody SkillResourceRequestDTO resource) {
         logger.info("Admin adding resource for skill: {}", resource.getSkill());
