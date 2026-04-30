@@ -8,6 +8,13 @@ import MainLayout from "./layouts/MainLayout";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import SkillAnalyzer from "./pages/SkillAnalyzer";
+import AnalysisHistory from "./pages/AnalysisHistory";
+import AnalysisDetail from "./pages/AnalysisDetail";  
+import RepoRecommender from "./pages/RepoRecommender";
+import Categories from "./pages/admin/Categories";
+import Roles from "./pages/admin/Roles";
+import Resources from "./pages/admin/Resources";
+import Users from "./pages/superAdmin/Users";
 
 const Page = ({ name }) => (
   <div className="p-8 text-xl font-semibold text-gray-700">{name}</div>
@@ -34,62 +41,48 @@ function App() {
       } />
       <Route path="/analysis" element={
         <ProtectedRoute>
-          <MainLayout><Page name="Analysis History" /></MainLayout>
+          <MainLayout><AnalysisHistory /></MainLayout>
         </ProtectedRoute>
       } />
       <Route path="/analysis/:id" element={
         <ProtectedRoute>
-          <MainLayout><Page name="Analysis Detail" /></MainLayout>
+          <MainLayout><AnalysisDetail /></MainLayout>
         </ProtectedRoute>
       } />
       <Route path="/repos" element={
         <ProtectedRoute>
-          <MainLayout><Page name="Repo Recommender" /></MainLayout>
+          <MainLayout><RepoRecommender /></MainLayout>
         </ProtectedRoute>
       } />
 
       {/* admin */}
-      <Route path="/admin" element={
-        <ProtectedRoute>
-          <RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
-            <MainLayout><Page name="Admin Dashboard" /></MainLayout>
-          </RoleRoute>
-        </ProtectedRoute>
-      } />
       <Route path="/admin/categories" element={
         <ProtectedRoute>
           <RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
-            <MainLayout><Page name="Categories" /></MainLayout>
+            <MainLayout><Categories /></MainLayout>
           </RoleRoute>
         </ProtectedRoute>
       } />
       <Route path="/admin/roles" element={
         <ProtectedRoute>
           <RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
-            <MainLayout><Page name="Roles" /></MainLayout>
+            <MainLayout><Roles /></MainLayout>
           </RoleRoute>
         </ProtectedRoute>
       } />
       <Route path="/admin/resources" element={
         <ProtectedRoute>
           <RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
-            <MainLayout><Page name="Resources" /></MainLayout>
+            <MainLayout><Resources /></MainLayout>
           </RoleRoute>
         </ProtectedRoute>
       } />
 
       {/* super admin */}
-      <Route path="/super-admin" element={
-        <ProtectedRoute>
-          <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
-            <MainLayout><Page name="Super Admin Dashboard" /></MainLayout>
-          </RoleRoute>
-        </ProtectedRoute>
-      } />
       <Route path="/super-admin/users" element={
         <ProtectedRoute>
           <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
-            <MainLayout><Page name="Users" /></MainLayout>
+            <MainLayout><Users /></MainLayout>
           </RoleRoute>
         </ProtectedRoute>
       } />

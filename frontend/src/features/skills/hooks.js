@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getCategories, getRoles, getRoleByName } from "./api";
+import { getCategories, getRoles, getRoleByName, getAllSkills } from "./api";
 import { QUERY_KEYS } from "../../constants/queryKeys";
 
 export const useCategories = () => {
@@ -22,5 +22,12 @@ export const useRoleByName = (roleName) => {
     queryKey: QUERY_KEYS.ROLE_BY_NAME(roleName),
     queryFn: () => getRoleByName(roleName).then((res) => res.data),
     enabled: !!roleName,
+  });
+};
+
+export const useAllSkills = () => {
+  return useQuery({
+    queryKey: QUERY_KEYS.ALL_SKILLS,
+    queryFn: () => getAllSkills().then((res) => res.data),
   });
 };

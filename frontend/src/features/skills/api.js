@@ -7,3 +7,6 @@ export const getRoles = (category) =>
 
 export const getRoleByName = (roleName) =>
   api.get(`/skills/roles/${roleName}`);
+
+export const getAllSkills = () => 
+  api.get("/skills/all");

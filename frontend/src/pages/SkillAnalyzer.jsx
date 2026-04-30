@@ -42,7 +42,7 @@ const SkillAnalyzer = () => {
   };
 
   const handleSubmit = () => {
-    if (!selectedRole || selectedSkills.length === 0) return;
+    if (!selectedRole || isPending) return;
 
     analyze(
       {
@@ -81,7 +81,7 @@ const SkillAnalyzer = () => {
             onChange={handleCategoryChange}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">-- Choose a category --</option>
+            <option value="">  Choose a category  </option>
             {loadingCategories ? (
               <option disabled>Loading...</option>
             ) : (
@@ -105,7 +105,7 @@ const SkillAnalyzer = () => {
             disabled={!selectedCategory}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
           >
-            <option value="">-- Choose a role --</option>
+            <option value="">  Choose a role  </option>
             {loadingRoles ? (
               <option disabled>Loading...</option>
             ) : (
@@ -192,7 +192,7 @@ const SkillAnalyzer = () => {
         {/* analyze button */}
         <button
           onClick={handleSubmit}
-          disabled={!selectedRole || selectedSkills.length === 0 || isPending}
+          disabled={!selectedRole || isPending}
           className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-semibold py-3 rounded-lg text-sm transition-colors"
         >
           {isPending ? "Analyzing..." : "Analyze Skills"}
@@ -314,34 +314,38 @@ const SkillAnalyzer = () => {
                   {Object.entries(result.reposBySkill).map(
                     ([skill, repos]) => (
                       <div key={skill}>
-                        <p className="text-sm font-semibold text-gray-700 mb-2 capitalize">
+                        <p className="text-sm font-semibold text-gray-700 mb-2">
                           {skill}
                         </p>
-                        <div className="space-y-2">
-                          {repos.map((repo) => (
-                            
-                              
-                            <a
-                              key={repo.url}
-                              href={repo.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block border border-gray-200 rounded-lg p-3 hover:border-indigo-300 transition-colors"
-                            >
-                              <div className="flex items-center justify-between">
-                                <p className="text-sm font-medium text-gray-800">
-                                  {repo.name}
+                        {repos.length === 0 ? (
+                          <p className="text-gray-400 text-xs">
+                            No repositories found for this skill.
+                          </p>
+                        ) : (
+                          <div className="space-y-2">
+                            {repos.map((repo) => (
+                              <a
+                                key={repo.url}
+                                href={repo.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block border border-gray-200 rounded-lg p-3 hover:border-indigo-300 transition-colors"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <p className="text-sm font-medium text-gray-800">
+                                    {repo.name}
+                                  </p>
+                                  <span className="text-xs text-gray-400">
+                                    ★ {repo.stars}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1 truncate">
+                                  {repo.description}
                                 </p>
-                                <span className="text-xs text-gray-400">
-                                  ★ {repo.stars}
-                                </span>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1 truncate">
-                                {repo.description}
-                              </p>
-                            </a>
-                          ))}
-                        </div>
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )
                   )}
