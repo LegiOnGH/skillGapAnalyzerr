@@ -67,7 +67,7 @@ public class AnalysisService {
                 .orElseThrow(() -> new ResourceNotFoundException("Analysis not found"));
         String currentUserId = getCurrentUserId(); // from SecurityContext
         if (!analysis.getUserId().equals(currentUserId))
-            throw new BadRequestException("Not authorized to delete this analysis");
+            throw new UnauthorizedException("Not authorized to delete this analysis");
         analysisRepository.delete(analysis);
     }
 

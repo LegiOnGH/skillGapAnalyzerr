@@ -42,7 +42,7 @@ public class ProfileService {
                     !normalized.equals(StringNormalizer.normalize(user.getUserName()))) {
                 throw new BadRequestException("Username already taken");
             }
-            user.setUserName(dto.getUserName().trim());
+            user.setUserName(normalized);
         }
 
         if (dto.getEmail() != null && !dto.getEmail().isBlank()) {

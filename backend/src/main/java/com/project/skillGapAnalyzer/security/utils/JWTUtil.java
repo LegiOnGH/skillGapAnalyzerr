@@ -69,10 +69,10 @@ public class JWTUtil {
     public boolean validateToken(String token, String userName) {
         try {
             Claims claims = extractAllClaims(token);
-            logger.info("Token subject: {}", claims.getSubject());
-            logger.info("UserDetails username: {}", userName);
-            logger.info("Token expiration: {}", claims.getExpiration());
-            logger.info("Now: {}", new Date());
+            logger.debug("Token subject: {}", claims.getSubject());
+            logger.debug("UserDetails username: {}", userName);
+            logger.debug("Token expiration: {}", claims.getExpiration());
+            logger.debug("Now: {}", new Date());
             return claims.getSubject().equals(userName)
                     && claims.getExpiration().after(new Date());
 

@@ -95,6 +95,18 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    // 403
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUnauthorized(UnauthorizedException ex) {
+        logger.warn("Unauthorized action: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponseDTO(
+                        ex.getMessage(),
+                        HttpStatus.FORBIDDEN,
+                        Instant.now()
+                ));
+    }
+
     //502
     @ExceptionHandler(ExternalServiceException.class)
     public ResponseEntity<ErrorResponseDTO> handleExternal(ExternalServiceException ex) {

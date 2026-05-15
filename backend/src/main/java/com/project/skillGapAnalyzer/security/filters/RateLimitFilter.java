@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -50,7 +51,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
 
         // use IP + path as key
-        String ip = request.getRemoteAddr();
+        String ip = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
+            .map(h -> h.split(",")[0].trim())
+            .orElse(request.getRemoteAddr());
         String key = ip + ":" + path;
         Bucket bucket = getBucket(key);
 
