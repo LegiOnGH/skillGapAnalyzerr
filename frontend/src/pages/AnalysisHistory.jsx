@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useAnalysisHistory } from "../features/analysis/hooks";
-import { useDeleteAnalysis } from "../features/analysis/hooks";
+import { useAnalysisHistory, useDeleteAnalysis } from "../features/analysis/hooks";
 import { formatDate } from "../utils/formatDate";
 
 const AnalysisHistory = () => {

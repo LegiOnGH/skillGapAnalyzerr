@@ -5,10 +5,11 @@ import { ROLES } from "../constants/roles";
 
 const SidebarContent = ({ role, isActive, setSidebarOpen, handleLogout }) => {
   const navLinks = [
+    { path: "/profile", label: "Profile", icon: "◷" },
     { path: "/dashboard", label: "Dashboard", icon: "⊞" },
     { path: "/skills/analyze", label: "Skill Analyzer", icon: "◎" },
     { path: "/analysis", label: "History", icon: "☰" },
-    { path: "/repos", label: "Repo Finder", icon: "⌥" },
+    { path: "/repos", label: "Repo Finder", icon: "⌥" }
   ];
 
   const adminLinks = [

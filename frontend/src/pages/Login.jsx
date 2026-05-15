@@ -37,8 +37,9 @@ const Login = () => {
     return;
   }
 
-  setForm({ userName: "", password: "" });
-  login(form);
+  login(form, {
+    onSuccess: () => setForm({ userName: "", password: "" }),
+  });
 };
 
   return (

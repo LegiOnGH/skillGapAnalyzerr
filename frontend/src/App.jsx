@@ -15,6 +15,7 @@ import Categories from "./pages/admin/Categories";
 import Roles from "./pages/admin/Roles";
 import Resources from "./pages/admin/Resources";
 import Users from "./pages/superAdmin/Users";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -50,6 +51,12 @@ function App() {
           <MainLayout><RepoRecommender /></MainLayout>
         </ProtectedRoute>
       } />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <MainLayout><Profile /></MainLayout>
+        </ProtectedRoute>
+      }
+      />
 
       {/* admin */}
       <Route path="/admin/categories" element={

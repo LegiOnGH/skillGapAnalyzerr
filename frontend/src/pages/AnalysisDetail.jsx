@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAnalysisById } from "../features/analysis/hooks";
-import { useDeleteAnalysis } from "../features/analysis/hooks";
+import { useAnalysisById, useDeleteAnalysis } from "../features/analysis/hooks";
 import { formatDateTime } from "../utils/formatDate";
 import { getErrorMessage } from "../utils/errorHandler";
 

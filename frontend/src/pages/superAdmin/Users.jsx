@@ -130,7 +130,12 @@ const Users = () => {
                         <div className="flex items-center gap-3">
                           <select
                             value={user.role}
-                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                            onChange={(e) => {
+                              const newRole = e.target.value;
+                              if(confirm(`Change ${user.userName}'s role to ${getRoleLabel(newRole)}?`)){
+                                handleRoleChange(user.id, newRole);
+                              }
+                            }}
                             className="border border-gray-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
                           >
                             {ROLE_OPTIONS.map((opt) => (
