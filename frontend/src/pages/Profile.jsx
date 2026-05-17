@@ -36,16 +36,16 @@ const Profile = () => {
 
     updateMe(payload, {
       onSuccess: () => {
-        setEditing(false);
-        setError("");
-
         const usernameChanged = payload.userName !== undefined;
+        
         if(usernameChanged){
           setSuccess("Username changed. Logging you out...");
-          setTimeout(() => logout(), 1500);
+          setTimeout(() => logout(), 2500);
         } else {
-        setSuccess("Profile updated successfully.");
-        setTimeout(() => setSuccess(""), 3000);
+          setEditing(false);
+          setError("");
+          setSuccess("Profile updated successfully.");
+          setTimeout(() => setSuccess(""), 3000);
         }
       },
       onError: (err) => {
