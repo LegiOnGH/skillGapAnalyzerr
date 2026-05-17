@@ -1,5 +1,5 @@
 import { useState} from "react";
-import { useAuthStore } from "../store/authStore";
+import useAuthStore from "../store/authStore";
 import { useMe, useUpdateMe } from "../features/profile/hooks";
 import { getErrorMessage } from "../utils/errorHandler";
 
