@@ -1,4 +1,5 @@
 import { useState} from "react";
+import { useAuthStore } from "../store/authStore";
 import { useMe, useUpdateMe } from "../features/profile/hooks";
 import { getErrorMessage } from "../utils/errorHandler";
 
@@ -10,6 +11,8 @@ const Profile = () => {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const logout = useAuthStore((state) => state.logout);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -35,8 +38,15 @@ const Profile = () => {
       onSuccess: () => {
         setEditing(false);
         setError("");
+
+        const usernameChanged = payload.userName !== undefined;
+        if(usernameChanged){
+          alert("Username changed. Please log in again.");
+          logout();
+        } else {
         setSuccess("Profile updated successfully.");
         setTimeout(() => setSuccess(""), 3000);
+        }
       },
       onError: (err) => {
         setError(getErrorMessage(err));
