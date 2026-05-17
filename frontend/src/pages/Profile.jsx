@@ -37,9 +37,8 @@ const Profile = () => {
     updateMe(payload, {
       onSuccess: () => {
         const usernameChanged = payload.userName !== undefined;
-        
+
         if(usernameChanged){
-          setSuccess("Username changed. Logging you out...");
           setTimeout(() => logout(), 2500);
         } else {
           setEditing(false);
