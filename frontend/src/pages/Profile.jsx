@@ -41,8 +41,8 @@ const Profile = () => {
 
         const usernameChanged = payload.userName !== undefined;
         if(usernameChanged){
-          alert("Username changed. Please log in again.");
-          logout();
+          setSuccess("Username changed. Logging you out...");
+          setTimeout(() => logout(), 1500);
         } else {
         setSuccess("Profile updated successfully.");
         setTimeout(() => setSuccess(""), 3000);
